@@ -1,11 +1,12 @@
-## Welcome to GitHub Pages
-
+## Welcome to mep8 project, pep8 for matlab
+This toom (mep8.m) was created with the thought of making a tool to enhance matlab code style, similarly tp Python Enhancement Proposal 8 (PEP8).
+Please participate, test and cotribute so together we can help making a useful tool. The goal - make the code legible and standardized.
 You can use the [editor on GitHub](https://github.com/yuval-harpaz/mep8/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### Markdown
-
+### Installation
+The code mep8.m should work as stand-alone. If you want it to run on the default tests/test1.m, clone or download the whole repo. Then you can run mep8 with no input arguments.
 Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
 ```markdown
