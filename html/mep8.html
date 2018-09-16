@@ -1,0 +1,729 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>mep8</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-09-16"><meta name="DC.source" content="mep8.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Input - output</a></li><li><a href="#4">features:</a></li><li><a href="#5">To Do</a></li><li><a href="#6">Assign default values</a></li><li><a href="#7">check compatibility / code warnings</a></li><li><a href="#8">read text file</a></li><li><a href="#9">use matlab automatic indentation to add / remove spaces</a></li><li><a href="#10">look for '=' or other stuff to pad with spaces</a></li><li><a href="#11">overwrite if requested, save backup ('*bkp.m')</a></li><li><a href="#12">Internal functions</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [txt1,issues] = mep8(fileName,overwrite)
+</pre><pre class="codeinput"><span class="comment">% Checks style issues in matlab code, fixes and overwrites if requested.</span>
+</pre><h2 id="3">Input - output</h2><pre>- fileName is *.m text file with code to check / fix
+- overwrite is true or false. when true, fileName is overwritten and a
+backup file is created, ending in bkp.m
+- txt1 is a string containing fixed code
+- issues contain fields describing the different issues encountered line
+by line.</pre><h2 id="4">features:</h2><pre>- use checkcode.m to report code errors etc. chsckcode issues are reported
+but not fixed.
+- use indentcode.m to check and fix indentation issues.
+- use splitcode (adapted from m2html) to process the text. This labels
+strings and comments in the code, not to be touched when fixing (see
+splitCode below).
+- pad "=" with spaces, or any char defined in spacePad variable</pre><h2 id="5">To Do</h2><pre>- polish and test on more code
+- decide what to do with * / .^ etc
+- try avoiding extra spaces inside code lines
+- try add spaces after , ; and such in middle of line, but not before
+- check variable names - this is a hard one, make lower first letter etc
+- do something about line lengths</pre><h2 id="6">Assign default values</h2><p>when no fileName is given (no such var or empty) take default test file</p><pre class="codeinput">fileName = defaultVal(<span class="string">'fileName'</span>,[fileparts(which(<span class="string">'mep8.m'</span>)),<span class="string">'/tests/test1.m'</span>]);
+<span class="keyword">if</span> ~isequal(fileName(end-1:end),<span class="string">'.m'</span>)
+    tmp = which(fileName);
+    <span class="keyword">if</span> ~isempty(tmp)
+        fileName = tmp;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="keyword">if</span> ~exist(fileName,<span class="string">'file'</span>)
+    error([fileName,<span class="string">' not found'</span>])
+<span class="keyword">end</span>
+overwrite = defaultVal(<span class="string">'overwrite'</span>,false); <span class="comment">% overwrite file and save backup?</span>
+spacePad = <span class="string">'&gt;&lt;=|&amp;'</span>; <span class="comment">% which stuff to pad with spaces</span>
+noSpaceNear = <span class="string">'~&gt;&lt;=|&amp;'</span>; <span class="comment">% between which chars not to isert space, e.g. ~=   &amp;&amp;</span>
+</pre><h2 id="7">check compatibility / code warnings</h2><pre class="codeinput">disp(<span class="string">'running checkcode: '</span>)
+issuesCodecheck = checkcode(fileName,<span class="string">'-string'</span>);
+<span class="keyword">if</span> isempty(issuesCodecheck)
+    fprintf(<span class="string">'\b done \n\n'</span>)
+<span class="keyword">else</span>
+    disp(issuesCodecheck);
+<span class="keyword">end</span>
+issues.codeCheck=issuesCodecheck;
+</pre><pre class="codeoutput">running checkcode:  done 
+
+</pre><h2 id="8">read text file</h2><pre class="codeinput">f = fopen(fileName);
+txt0 = native2unicode(fread(f,<span class="string">'uint8=&gt;uint8'</span>)');
+fclose(f);
+<span class="comment">% replace return \r with newline \n</span>
+txt0 = regexprep(txt0, <span class="string">'\r\n?'</span>, <span class="string">'\n'</span>);
+<span class="comment">% make sure last character is newline</span>
+<span class="keyword">if</span> ~isequal(txt0(end),newline)
+    txt0(end+1) = newline;
+<span class="keyword">end</span>
+</pre><h2 id="9">use matlab automatic indentation to add / remove spaces</h2><pre class="codeinput">disp(<span class="string">'checking bad indentations :'</span>)
+txt1 = indentcode(txt0);
+<span class="comment">% find newline location in orig (0) and new text (1)</span>
+newLines0 = regexp(txt0,<span class="string">'\n'</span>);
+newLines1 = regexp(txt1,<span class="string">'\n'</span>);
+<span class="keyword">if</span> ~isequal(length(newLines0),length(newLines1))
+    error(<span class="string">'indented code and orig have different numbers of lines'</span>);
+<span class="keyword">end</span>
+<span class="comment">%location of line beginning in texts</span>
+startLine0 = [1,newLines0(1:end-1)+1];
+startLine1 = [1,newLines1(1:end-1)+1];
+<span class="comment">% go line by line and check differences in spaces location</span>
+<span class="comment">% along the way, process txt1 and label the contents</span>
+<span class="comment">%</span>
+content=repmat(<span class="string">'c'</span>,1,length(txt1)); <span class="comment">% c  is for code (not cookey)</span>
+row=nan(size(txt1));
+content(strfind(txt1,newline))=<span class="string">'n'</span>;
+issuesIndent = <span class="string">''</span>;
+<span class="keyword">for</span> linei = 1:length(startLine0)
+    line0 = txt0(startLine0(linei):newLines0(linei)-1);
+    line1 = txt1(startLine1(linei):newLines1(linei)-1);
+    msg = <span class="string">''</span>;
+    lin = num2str(linei);
+    spaceIdx0 = ismember(line0,<span class="string">' '</span>);
+    spaceIdx1 = ismember(line1,<span class="string">' '</span>);
+    <span class="comment">% check length of indentation</span>
+    indent0 = find(~spaceIdx0,1);
+    indent1 = find(~spaceIdx1,1);
+
+    <span class="keyword">if</span> isempty(indent1) &amp;&amp; any(spaceIdx1) <span class="comment">% a line with nothing but spaces</span>
+        content(startLine1(linei):startLine1(linei)+length(line1)-1)=<span class="string">'i'</span>;
+    <span class="keyword">elseif</span> indent1&gt;1 <span class="comment">% a line with spaces and then something else</span>
+        content(startLine1(linei):startLine1(linei)+indent1-2)=<span class="string">'i'</span>;
+    <span class="keyword">end</span>
+    row(startLine1(linei):newLines1(linei))=linei;
+    <span class="comment">% split to look for strings and comments (from m2html)</span>
+    splitc = splitCode(line1);
+    start=startLine1(linei); <span class="comment">% marks beginning of split strings</span>
+    <span class="keyword">for</span> spliti=1:length(splitc)
+        <span class="keyword">if</span> ~isempty(splitc{spliti})
+            <span class="keyword">switch</span> splitc{spliti}(1)
+                <span class="keyword">case</span> <span class="string">'%'</span>
+                    content(start:start+length(splitc{spliti})-1)=<span class="string">'%'</span>;
+                <span class="keyword">case</span> <span class="string">''''</span>
+                    content(start:start+length(splitc{spliti})-1)=<span class="string">''''</span>;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        start=start+length(splitc{spliti}); <span class="comment">% location of next split</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span> ~strcmp(line0,line1)
+        <span class="keyword">if</span> indent1&gt;indent0
+            num = num2str(indent1-indent0);
+            msg = [<span class="string">'add '</span>,num,<span class="string">' spaces. '</span>];
+        <span class="keyword">elseif</span> indent1&lt;indent0
+            num = num2str(indent0-indent1);
+            msg = [<span class="string">'remove '</span>,num,<span class="string">' spaces. '</span>];
+        <span class="keyword">end</span>
+        <span class="keyword">if</span> sum(~spaceIdx0) == sum(~spaceIdx1)
+            lastNotSpace0 = find(~spaceIdx0,1,<span class="string">'last'</span>);
+            lastNotSpace1 = find(~spaceIdx1,1,<span class="string">'last'</span>);
+            <span class="keyword">if</span> lastNotSpace1&lt;length(line1)
+                error(<span class="string">'last fixed charecter should not be space'</span>)
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> lastNotSpace0&lt;length(line0)
+                msg = [msg,num2str(length(line0)-lastNotSpace0),<span class="keyword">...</span>
+                    <span class="string">' extra spaces in end of line'</span>];
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        issuesIndent = [issuesIndent,<span class="string">'L '</span>,lin,<span class="string">': '</span>,msg,newline];
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="keyword">if</span> isempty(issuesIndent)
+    fprintf(<span class="string">'\b done \n\n'</span>)
+<span class="keyword">else</span>
+    disp(issuesIndent)
+<span class="keyword">end</span>
+issues.indent=issuesIndent;
+</pre><pre class="codeoutput">checking bad indentations :
+L 4: add 2 spaces. 2 extra spaces in end of line
+L 7: add 2 spaces. 
+L 9: add 4 spaces. 3 extra spaces in end of line
+L 18: remove 1 spaces. 
+
+</pre><h2 id="10">look for '=' or other stuff to pad with spaces</h2><pre class="codeinput">disp([<span class="string">'padding '</span>,spacePad,<span class="string">' with spaces: '</span>])
+toPad = ismember(txt1,spacePad);
+insertSpace = toPad; <span class="comment">% make space after "="</span>
+insertSpace(find(toPad)-1) = true; <span class="comment">% make space before "="</span>
+<span class="comment">% find ~= &lt;= and &gt;=</span>
+logi = find(ismember(txt1,noSpaceNear));
+<span class="keyword">if</span> ~isempty(logi)
+    <span class="comment">%spacei = find(insertSpace);</span>
+    [~,ii] = ismember(logi,find(toPad)-1);
+    <span class="keyword">if</span> any(ii)
+        logi = logi(ii&gt;0);
+        insertSpace(logi) = false;
+        insertSpace(logi-1) = true;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="comment">% FIXME - space before ~=  as in "y = x~= 5"</span>
+insertSpace(ismember(txt1,<span class="string">' '</span>)) = false; <span class="comment">% dont insert space after space</span>
+insertSpace(find(ismember(txt1,<span class="string">' '</span>))-1) = false;  <span class="comment">% dont insert space before space</span>
+<span class="comment">% avoid touching strings and comments</span>
+insertSpace(ismember(content,<span class="string">'%'</span>)) = false;
+insertSpace(ismember(content,<span class="string">''''</span>)) = false;
+tmp = [strrep(txt1,newline,<span class="string">'N'</span>);strrep(num2str(insertSpace),<span class="string">' '</span>,<span class="string">''</span>);content];
+disp(<span class="string">'location of "insert space after = "'</span>);
+disp(tmp);
+<span class="keyword">if</span> ~isequal(unique(content(insertSpace)),<span class="string">'c'</span>)
+    warning(<span class="string">'space insertion not in code "c"'</span>)
+<span class="keyword">end</span>
+spacedLines=unique(row(insertSpace));
+issuesSpace=<span class="string">''</span>;
+<span class="keyword">for</span> linei=1:length(spacedLines)
+    loc=find(insertSpace &amp; row == spacedLines(linei));
+    padded=spacePad(ismember(spacePad,txt1(loc(1)-1:loc(end))));
+    issuesSpace=[issuesSpace,<span class="string">'L '</span>,num2str(spacedLines(linei)),<span class="string">': '</span>,<span class="keyword">...</span>
+        padded,<span class="string">' padded with spaces.'</span>,newline];
+<span class="keyword">end</span>
+issues.spacePad=issuesSpace;
+<span class="keyword">for</span> inserti = sort(find(insertSpace),<span class="string">'descend'</span>)
+    txt1 = insertAfter(txt1,inserti,<span class="string">' '</span>);
+    content = insertAfter(content,inserti,<span class="string">'c'</span>);
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">padding &gt;&lt;=|&amp; with spaces: 
+location of "insert space after = "
+% function test1NNfor ii=1:10N    x=5;N    N    if ii==2N        x=x+1/3;N    elseif ii~=3N        x=ii;N    elseif x &gt;=1000N        x=999;N    elseif x&lt;=0N        x = 1;N    elseif x &gt;34N        x=34;N    elseif x &lt;=54N        disp('x is okay I guess')N    endNendNstr='I got  a =sign!';Ndisp(str)N% treat &lt;= respectfullyNdisp(x)Ntxt0 = native2unicode(fread(f,'uint8=&gt;uint8')');Ndisp(['here I test 3 dots + comment               XXXXXXXXXXXXX',... % here a comment laysN    ' more string here']);Ndisp('3 dots here ...  ') % more dots testsNx = 5+3+10000-...N    34;Nx = x+3+10000-...N    35; % comment here?Nx = x+3+10000-...N    35; % comment there? with 'qoutes'?NN
+000000000000000000000001100000000011000000000000000010100000000001100000000000000000001010000000000110000000000000000001000000000000011000000000000000010100000000000000000000000000000010000000000011000000000000000000100000000000000000000000000000000000000000000000000011000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+%%%%%%%%%%%%%%%%nncccccccccccniiiiccccniiiiniiiiccccccccniiiiiiiiccccccccniiiiccccccccccccniiiiiiiicccccniiiicccccccccccccccniiiiiiiiccccccniiiicccccccccccniiiiiiiiccccccniiiiccccccccccccniiiiiiiicccccniiiicccccccccccccniiiiiiiiccccc'''''''''''''''''''cniiiicccncccncccc'''''''''''''''''cncccccccccn%%%%%%%%%%%%%%%%%%%%%%%ncccccccncccccccccccccccccccccccccccccc''''''''''''''ccccncccccc''''''''''''''''''''''''''''''''''''''''''''''''''''''''''ccccc%%%%%%%%%%%%%%%%%%%%%niiii'''''''''''''''''''cccnccccc'''''''''''''''''''cc%%%%%%%%%%%%%%%%%ncccccccccccccccccniiiicccncccccccccccccccccniiiicccc%%%%%%%%%%%%%%%ncccccccccccccccccniiiicccc%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%nn
+</pre><h2 id="11">overwrite if requested, save backup ('*bkp.m')</h2><pre class="codeinput"><span class="keyword">if</span> overwrite &amp;&amp; ~isequal(txt1,txt0)
+    [pat1,pat2,pat3] = fileparts(fileName);
+    <span class="keyword">if</span> ~isempty(pat1)
+        pat1 = [pat1,<span class="string">'/'</span>];
+    <span class="keyword">end</span>
+    bkpNew = false;
+    ii = 0;
+    <span class="keyword">while</span> bkpNew == false
+        ii = ii+1;
+        backup = [pat1,pat2,<span class="string">'_'</span>,num2str(ii),<span class="string">'bkp'</span>,pat3];
+        <span class="keyword">if</span> ~exist(backup,<span class="string">'file'</span>)
+            bkpNew = true;
+
+            fbkp = fopen(backup,<span class="string">'w'</span>);
+            fwrite(fbkp,txt1);
+            fclose(fbkp);
+            <span class="keyword">if</span> ~exist(backup,<span class="string">'file'</span>)
+                error(<span class="string">'backup file not created, not overwriting'</span>)
+            <span class="keyword">end</span>
+            f = fopen(fileName,<span class="string">'w'</span>);
+            fwrite(f,txt1);
+            fclose(f);
+            disp([<span class="string">'overwrote, backup file: '</span>,backup])
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">
+ans =
+
+    '% function test1
+     
+     for ii = 1:10
+         x = 5;
+         
+         if ii == 2
+             x = x+1/3;
+         elseif ii ~= 3
+             x = ii;
+         elseif x &gt;= 1000
+             x = 999;
+         elseif x &lt;= 0
+             x = 1;
+         elseif x &gt; 34
+             x = 34;
+         elseif x &lt;= 54
+             disp('x is okay I guess')
+         end
+     end
+     str = 'I got  a =sign!';
+     disp(str)
+     % treat &lt;= respectfully
+     disp(x)
+     txt0 = native2unicode(fread(f,'uint8=&gt;uint8')');
+     disp(['here I test 3 dots + comment               XXXXXXXXXXXXX',... % here a comment lays
+         ' more string here']);
+     disp('3 dots here ...  ') % more dots tests
+     x = 5+3+10000-...
+         34;
+     x = x+3+10000-...
+         35; % comment here?
+     x = x+3+10000-...
+         35; % comment there? with 'qoutes'?
+     
+     '
+
+</pre><h2 id="12">Internal functions</h2><pre class="codeinput"><span class="keyword">function</span> val = defaultVal(varName,defValue)
+<span class="comment">% assigns defValue to varName when varName does not exist or empty</span>
+<span class="keyword">if</span> evalin(<span class="string">'caller'</span>,[<span class="string">'exist('''</span>,varName,<span class="string">''','</span>,<span class="string">'''var'''</span>,<span class="string">');'</span>])
+    val = evalin(<span class="string">'caller'</span>,varName);
+<span class="keyword">else</span>
+    val = [];
+<span class="keyword">end</span>
+<span class="keyword">if</span> isempty(val)
+    val = defValue;
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> splitc = splitCode(code)
+<span class="comment">% adapted from m2html</span>
+<span class="comment">% splits line of Matlab code CODE into a cell</span>
+<span class="comment">%  array SPLITC where each element is either a character array ('...'),</span>
+<span class="comment">%  a comment (%...), a continuation (...) or something else.</span>
+<span class="comment">%  Note that CODE = [SPLITC{:}]</span>
+<span class="comment">%</span>
+<span class="comment">%  See also M2HTML, HIGHLIGHT</span>
+<span class="comment">%  GNU 2.0 license or later</span>
+<span class="comment">%  Copyright (C) 2003 Guillaume Flandin &lt;Guillaume@artefact.tk&gt;</span>
+
+
+<span class="comment">%- Label quotes in {'transpose', 'beginstring', 'midstring', 'endstring'}</span>
+iquote = strfind(code,<span class="string">''''</span>);
+quotetransp = [double(<span class="string">'_''.)}]'</span>) <span class="keyword">...</span>
+    double(<span class="string">'A'</span>):double(<span class="string">'Z'</span>) <span class="keyword">...</span>
+    double(<span class="string">'0'</span>):double(<span class="string">'9'</span>) <span class="keyword">...</span>
+    double(<span class="string">'a'</span>):double(<span class="string">'z'</span>)];
+flagstring = 0;
+flagdoublequote = 0;
+jquote = [];
+<span class="keyword">for</span> i=1:length(iquote)
+    <span class="keyword">if</span> ~flagstring
+        <span class="keyword">if</span> iquote(i) &gt; 1 &amp;&amp; any(quotetransp == double(code(iquote(i)-1)))
+            <span class="comment">% =&gt; 'transpose';</span>
+        <span class="keyword">else</span>
+            <span class="comment">% =&gt; 'beginstring';</span>
+            jquote(size(jquote,1)+1,:) = [iquote(i) length(code)];
+            flagstring = 1;
+        <span class="keyword">end</span>
+    <span class="keyword">else</span> <span class="comment">% if flagstring</span>
+        <span class="keyword">if</span> flagdoublequote || <span class="keyword">...</span>
+                (iquote(i) &lt; length(code) &amp;&amp; strcmp(code(iquote(i)+1),<span class="string">''''</span>))
+            <span class="comment">% =&gt; 'midstring';</span>
+            flagdoublequote = ~flagdoublequote;
+        <span class="keyword">else</span>
+            <span class="comment">% =&gt; 'endstring';</span>
+            jquote(size(jquote,1),2) = iquote(i);
+            flagstring = 0;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">%- Find if a portion of code is a comment</span>
+ipercent = strfind(code,<span class="string">'%'</span>);
+jpercent = [];
+<span class="keyword">for</span> i=1:length(ipercent)
+    <span class="keyword">if</span> isempty(jquote) || <span class="keyword">...</span>
+            ~any((ipercent(i) &gt; jquote(:,1)) &amp; (ipercent(i) &lt; jquote(:,2)))
+        jpercent = [ipercent(i) length(code)];
+        <span class="keyword">break</span>;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% YH: this segment misbehaves</span>
+<span class="comment">% %- Find continuation punctuation '...'</span>
+<span class="comment">% icont = strfind(code,'...');</span>
+<span class="comment">% for i=1:length(icont)</span>
+<span class="comment">%     if (isempty(jquote) || ...</span>
+<span class="comment">%             ~any((icont(i) &gt; jquote(:,1)) &amp;&amp; (icont(i) &lt; jquote(:,2)))) &amp;&amp; ...</span>
+<span class="comment">%             (isempty(jpercent) || ...</span>
+<span class="comment">%             icont(i) &lt; jpercent(1))</span>
+<span class="comment">%         jpercent = [icont(i) length(code)];</span>
+<span class="comment">%         break;</span>
+<span class="comment">%     end</span>
+<span class="comment">% end</span>
+
+<span class="comment">%- Remove strings inside comments</span>
+<span class="keyword">if</span> ~isempty(jpercent) &amp;&amp; ~isempty(jquote)
+    jquote(jquote(:,1) &gt; jpercent(1),:) = [];
+<span class="keyword">end</span>
+
+<span class="comment">%- Split code in a cell array of strings</span>
+icode = [jquote ; jpercent];
+splitc = {};
+<span class="keyword">if</span> isempty(icode)
+    splitc{1} = code;
+<span class="keyword">elseif</span> icode(1,1) &gt; 1
+    splitc{1} = code(1:icode(1,1)-1);
+<span class="keyword">end</span>
+<span class="keyword">for</span> i=1:size(icode,1)
+    splitc{end+1} = code(icode(i,1):icode(i,2));
+    <span class="keyword">if</span> i &lt; size(icode,1) &amp;&amp; icode(i+1,1) &gt; icode(i,2) + 1
+        splitc{end+1} = code((icode(i,2)+1):(icode(i+1,1)-1));
+    <span class="keyword">elseif</span> i == size(icode,1) &amp;&amp; icode(i,2) &lt; length(code)
+        splitc{end+1} = code(icode(i,2)+1:end);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [txt1,issues] = mep8(fileName,overwrite)
+% Checks style issues in matlab code, fixes and overwrites if requested.
+%% Input - output
+%  - fileName is *.m text file with code to check / fix
+%  - overwrite is true or false. when true, fileName is overwritten and a
+% backup file is created, ending in bkp.m
+%  - txt1 is a string containing fixed code
+%  - issues contain fields describing the different issues encountered line
+% by line.
+
+%% features:
+%  - use checkcode.m to report code errors etc. chsckcode issues are reported
+% but not fixed.
+%  - use indentcode.m to check and fix indentation issues.
+%  - use splitcode (adapted from m2html) to process the text. This labels
+% strings and comments in the code, not to be touched when fixing (see
+% splitCode below).
+%  - pad "=" with spaces, or any char defined in spacePad variable
+
+%% To Do
+%  - polish and test on more code
+%  - decide what to do with * / .^ etc
+%  - try avoiding extra spaces inside code lines
+%  - try add spaces after , ; and such in middle of line, but not before
+%  - check variable names - this is a hard one, make lower first letter etc
+%  - do something about line lengths
+
+%% Assign default values
+% when no fileName is given (no such var or empty) take default test file
+fileName = defaultVal('fileName',[fileparts(which('mep8.m')),'/tests/test1.m']);
+if ~isequal(fileName(end-1:end),'.m')
+    tmp = which(fileName);
+    if ~isempty(tmp)
+        fileName = tmp;
+    end
+end
+if ~exist(fileName,'file')
+    error([fileName,' not found'])
+end
+overwrite = defaultVal('overwrite',false); % overwrite file and save backup?
+spacePad = '><=|&'; % which stuff to pad with spaces
+noSpaceNear = '~><=|&'; % between which chars not to isert space, e.g. ~=   &&
+
+%% check compatibility / code warnings
+disp('running checkcode: ')
+issuesCodecheck = checkcode(fileName,'-string');
+if isempty(issuesCodecheck)
+    fprintf('\b done \n\n')
+else
+    disp(issuesCodecheck);
+end
+issues.codeCheck=issuesCodecheck;
+
+%% read text file
+f = fopen(fileName);
+txt0 = native2unicode(fread(f,'uint8=>uint8')');
+fclose(f);
+% replace return \r with newline \n
+txt0 = regexprep(txt0, '\r\n?', '\n');
+% make sure last character is newline
+if ~isequal(txt0(end),newline)
+    txt0(end+1) = newline;
+end
+
+%% use matlab automatic indentation to add / remove spaces
+disp('checking bad indentations :')
+txt1 = indentcode(txt0);
+% find newline location in orig (0) and new text (1)
+newLines0 = regexp(txt0,'\n');
+newLines1 = regexp(txt1,'\n');
+if ~isequal(length(newLines0),length(newLines1))
+    error('indented code and orig have different numbers of lines');
+end
+%location of line beginning in texts
+startLine0 = [1,newLines0(1:end-1)+1];
+startLine1 = [1,newLines1(1:end-1)+1];
+% go line by line and check differences in spaces location
+% along the way, process txt1 and label the contents
+%
+content=repmat('c',1,length(txt1)); % c  is for code (not cookey)
+row=nan(size(txt1));
+content(strfind(txt1,newline))='n';
+issuesIndent = '';
+for linei = 1:length(startLine0)
+    line0 = txt0(startLine0(linei):newLines0(linei)-1);
+    line1 = txt1(startLine1(linei):newLines1(linei)-1);
+    msg = '';
+    lin = num2str(linei);
+    spaceIdx0 = ismember(line0,' ');
+    spaceIdx1 = ismember(line1,' ');
+    % check length of indentation
+    indent0 = find(~spaceIdx0,1);
+    indent1 = find(~spaceIdx1,1);
+    
+    if isempty(indent1) && any(spaceIdx1) % a line with nothing but spaces
+        content(startLine1(linei):startLine1(linei)+length(line1)-1)='i';
+    elseif indent1>1 % a line with spaces and then something else
+        content(startLine1(linei):startLine1(linei)+indent1-2)='i';
+    end
+    row(startLine1(linei):newLines1(linei))=linei;
+    % split to look for strings and comments (from m2html)
+    splitc = splitCode(line1);
+    start=startLine1(linei); % marks beginning of split strings
+    for spliti=1:length(splitc)
+        if ~isempty(splitc{spliti})
+            switch splitc{spliti}(1)
+                case '%'
+                    content(start:start+length(splitc{spliti})-1)='%';
+                case ''''
+                    content(start:start+length(splitc{spliti})-1)='''';
+            end
+        end
+        start=start+length(splitc{spliti}); % location of next split
+    end
+    
+    if ~strcmp(line0,line1)
+        if indent1>indent0
+            num = num2str(indent1-indent0);
+            msg = ['add ',num,' spaces. '];
+        elseif indent1<indent0
+            num = num2str(indent0-indent1);
+            msg = ['remove ',num,' spaces. '];
+        end
+        if sum(~spaceIdx0) == sum(~spaceIdx1)
+            lastNotSpace0 = find(~spaceIdx0,1,'last');
+            lastNotSpace1 = find(~spaceIdx1,1,'last');
+            if lastNotSpace1<length(line1)
+                error('last fixed charecter should not be space')
+            end
+            if lastNotSpace0<length(line0)
+                msg = [msg,num2str(length(line0)-lastNotSpace0),...
+                    ' extra spaces in end of line'];
+            end
+        end
+        issuesIndent = [issuesIndent,'L ',lin,': ',msg,newline];
+    end
+end
+if isempty(issuesIndent)
+    fprintf('\b done \n\n')
+else
+    disp(issuesIndent)
+end
+issues.indent=issuesIndent;
+
+%% look for '=' or other stuff to pad with spaces
+disp(['padding ',spacePad,' with spaces: '])
+toPad = ismember(txt1,spacePad);
+insertSpace = toPad; % make space after "="
+insertSpace(find(toPad)-1) = true; % make space before "="
+% find ~= <= and >=
+logi = find(ismember(txt1,noSpaceNear));
+if ~isempty(logi)
+    %spacei = find(insertSpace);
+    [~,ii] = ismember(logi,find(toPad)-1);
+    if any(ii)
+        logi = logi(ii>0);
+        insertSpace(logi) = false;
+        insertSpace(logi-1) = true;
+    end
+end
+% FIXME - space before ~=  as in "y = x~= 5"
+insertSpace(ismember(txt1,' ')) = false; % dont insert space after space
+insertSpace(find(ismember(txt1,' '))-1) = false;  % dont insert space before space
+% avoid touching strings and comments
+insertSpace(ismember(content,'%')) = false;
+insertSpace(ismember(content,'''')) = false;
+tmp = [strrep(txt1,newline,'N');strrep(num2str(insertSpace),' ','');content];
+disp('location of "insert space after = "');
+disp(tmp);
+if ~isequal(unique(content(insertSpace)),'c')
+    warning('space insertion not in code "c"')
+end
+spacedLines=unique(row(insertSpace));
+issuesSpace='';
+for linei=1:length(spacedLines)
+    loc=find(insertSpace & row == spacedLines(linei));
+    padded=spacePad(ismember(spacePad,txt1(loc(1)-1:loc(end))));
+    issuesSpace=[issuesSpace,'L ',num2str(spacedLines(linei)),': ',...
+        padded,' padded with spaces.',newline];
+end
+issues.spacePad=issuesSpace;
+for inserti = sort(find(insertSpace),'descend')
+    txt1 = insertAfter(txt1,inserti,' ');
+    content = insertAfter(content,inserti,'c');
+end
+
+%% overwrite if requested, save backup ('*bkp.m')
+if overwrite && ~isequal(txt1,txt0)
+    [pat1,pat2,pat3] = fileparts(fileName);
+    if ~isempty(pat1)
+        pat1 = [pat1,'/'];
+    end
+    bkpNew = false;
+    ii = 0;
+    while bkpNew == false
+        ii = ii+1;
+        backup = [pat1,pat2,'_',num2str(ii),'bkp',pat3];
+        if ~exist(backup,'file')
+            bkpNew = true;
+            
+            fbkp = fopen(backup,'w');
+            fwrite(fbkp,txt1);
+            fclose(fbkp);
+            if ~exist(backup,'file')
+                error('backup file not created, not overwriting')
+            end
+            f = fopen(fileName,'w');
+            fwrite(f,txt1);
+            fclose(f);
+            disp(['overwrote, backup file: ',backup])
+        end
+    end
+end
+
+%% Internal functions
+function val = defaultVal(varName,defValue)
+% assigns defValue to varName when varName does not exist or empty
+if evalin('caller',['exist(''',varName,''',','''var''',');'])
+    val = evalin('caller',varName);
+else
+    val = [];
+end
+if isempty(val)
+    val = defValue;
+end
+
+function splitc = splitCode(code)
+% adapted from m2html
+% splits line of Matlab code CODE into a cell
+%  array SPLITC where each element is either a character array ('...'),
+%  a comment (%...), a continuation (...) or something else.
+%  Note that CODE = [SPLITC{:}]
+%
+%  See also M2HTML, HIGHLIGHT
+%  GNU 2.0 license or later
+%  Copyright (C) 2003 Guillaume Flandin <Guillaume@artefact.tk>
+%  $Revision: 1.0 $Date: 2003/29/04 17:33:43 $
+
+%- Label quotes in {'transpose', 'beginstring', 'midstring', 'endstring'}
+iquote = strfind(code,'''');
+quotetransp = [double('_''.)}]') ...
+    double('A'):double('Z') ...
+    double('0'):double('9') ...
+    double('a'):double('z')];
+flagstring = 0;
+flagdoublequote = 0;
+jquote = [];
+for i=1:length(iquote)
+    if ~flagstring
+        if iquote(i) > 1 && any(quotetransp == double(code(iquote(i)-1)))
+            % => 'transpose';
+        else
+            % => 'beginstring';
+            jquote(size(jquote,1)+1,:) = [iquote(i) length(code)];
+            flagstring = 1;
+        end
+    else % if flagstring
+        if flagdoublequote || ...
+                (iquote(i) < length(code) && strcmp(code(iquote(i)+1),''''))
+            % => 'midstring';
+            flagdoublequote = ~flagdoublequote;
+        else
+            % => 'endstring';
+            jquote(size(jquote,1),2) = iquote(i);
+            flagstring = 0;
+        end
+    end
+end
+
+%- Find if a portion of code is a comment
+ipercent = strfind(code,'%');
+jpercent = [];
+for i=1:length(ipercent)
+    if isempty(jquote) || ...
+            ~any((ipercent(i) > jquote(:,1)) & (ipercent(i) < jquote(:,2)))
+        jpercent = [ipercent(i) length(code)];
+        break;
+    end
+end
+
+% YH: this segment misbehaves
+% %- Find continuation punctuation '...'
+% icont = strfind(code,'...');
+% for i=1:length(icont)
+%     if (isempty(jquote) || ...
+%             ~any((icont(i) > jquote(:,1)) && (icont(i) < jquote(:,2)))) && ...
+%             (isempty(jpercent) || ...
+%             icont(i) < jpercent(1))
+%         jpercent = [icont(i) length(code)];
+%         break;
+%     end
+% end
+
+%- Remove strings inside comments
+if ~isempty(jpercent) && ~isempty(jquote)
+    jquote(jquote(:,1) > jpercent(1),:) = [];
+end
+
+%- Split code in a cell array of strings
+icode = [jquote ; jpercent];
+splitc = {};
+if isempty(icode)
+    splitc{1} = code;
+elseif icode(1,1) > 1
+    splitc{1} = code(1:icode(1,1)-1);
+end
+for i=1:size(icode,1)
+    splitc{end+1} = code(icode(i,1):icode(i,2));
+    if i < size(icode,1) && icode(i+1,1) > icode(i,2) + 1
+        splitc{end+1} = code((icode(i,2)+1):(icode(i+1,1)-1));
+    elseif i == size(icode,1) && icode(i,2) < length(code)
+        splitc{end+1} = code(icode(i,2)+1:end);
+    end
+end
+##### SOURCE END #####
+--></body></html>
