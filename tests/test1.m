@@ -1,6 +1,6 @@
 % function test1
 
-for ii=1:10
+for ii=1:10;
   x=5;  
     
     if ii==2

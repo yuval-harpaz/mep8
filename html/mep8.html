@@ -105,7 +105,8 @@ issuesCodecheck = checkcode(fileName,<span class="string">'-string'</span>);
     disp(issuesCodecheck);
 <span class="keyword">end</span>
 issues.codeCheck=issuesCodecheck;
-</pre><pre class="codeoutput">running checkcode:  done 
+</pre><pre class="codeoutput">running checkcode: 
+L 3 (C 12): Extra semicolon is unnecessary in FOR statement before newline.
 
 </pre><h2 id="8">read text file</h2><pre class="codeinput">f = fopen(fileName);
 txt0 = native2unicode(fread(f,<span class="string">'uint8=&gt;uint8'</span>)');
@@ -242,9 +243,9 @@ issues.spacePad=issuesSpace;
 <span class="keyword">end</span>
 </pre><pre class="codeoutput">padding &gt;&lt;=|&amp; with spaces: 
 location of "insert space after = "
-% function test1NNfor ii=1:10N    x=5;N    N    if ii==2N        x=x+1/3;N    elseif ii~=3N        x=ii;N    elseif x &gt;=1000N        x=999;N    elseif x&lt;=0N        x = 1;N    elseif x &gt;34N        x=34;N    elseif x &lt;=54N        disp('x is okay I guess')N    endNendNstr='I got  a =sign!';Ndisp(str)N% treat &lt;= respectfullyNdisp(x)Ntxt0 = native2unicode(fread(f,'uint8=&gt;uint8')');Ndisp(['here I test 3 dots + comment               XXXXXXXXXXXXX',... % here a comment laysN    ' more string here']);Ndisp('3 dots here ...  ') % more dots testsNx = 5+3+10000-...N    34;Nx = x+3+10000-...N    35; % comment here?Nx = x+3+10000-...N    35; % comment there? with 'qoutes'?NN
-000000000000000000000001100000000011000000000000000010100000000001100000000000000000001010000000000110000000000000000001000000000000011000000000000000010100000000000000000000000000000010000000000011000000000000000000100000000000000000000000000000000000000000000000000011000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-%%%%%%%%%%%%%%%%nncccccccccccniiiiccccniiiiniiiiccccccccniiiiiiiiccccccccniiiiccccccccccccniiiiiiiicccccniiiicccccccccccccccniiiiiiiiccccccniiiicccccccccccniiiiiiiiccccccniiiiccccccccccccniiiiiiiicccccniiiicccccccccccccniiiiiiiiccccc'''''''''''''''''''cniiiicccncccncccc'''''''''''''''''cncccccccccn%%%%%%%%%%%%%%%%%%%%%%%ncccccccncccccccccccccccccccccccccccccc''''''''''''''ccccncccccc''''''''''''''''''''''''''''''''''''''''''''''''''''''''''ccccc%%%%%%%%%%%%%%%%%%%%%niiii'''''''''''''''''''cccnccccc'''''''''''''''''''cc%%%%%%%%%%%%%%%%%ncccccccccccccccccniiiicccncccccccccccccccccniiiicccc%%%%%%%%%%%%%%%ncccccccccccccccccniiiicccc%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%nn
+% function test1NNfor ii=1:10;N    x=5;N    N    if ii==2N        x=x+1/3;N    elseif ii~=3N        x=ii;N    elseif x &gt;=1000N        x=999;N    elseif x&lt;=0N        x = 1;N    elseif x &gt;34N        x=34;N    elseif x &lt;=54N        disp('x is okay I guess')N    endNendNstr='I got  a =sign!';Ndisp(str)N% treat &lt;= respectfullyNdisp(x)Ntxt0 = native2unicode(fread(f,'uint8=&gt;uint8')');Ndisp(['here I test 3 dots + comment               XXXXXXXXXXXXX',... % here a comment laysN    ' more string here']);Ndisp('3 dots here ...  ') % more dots testsNx = 5+3+10000-...N    34;Nx = x+3+10000-...N    35; % comment here?Nx = x+3+10000-...N    35; % comment there? with 'qoutes'?NN
+0000000000000000000000011000000000011000000000000000010100000000001100000000000000000001010000000000110000000000000000001000000000000011000000000000000010100000000000000000000000000000010000000000011000000000000000000100000000000000000000000000000000000000000000000000011000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+%%%%%%%%%%%%%%%%nnccccccccccccniiiiccccniiiiniiiiccccccccniiiiiiiiccccccccniiiiccccccccccccniiiiiiiicccccniiiicccccccccccccccniiiiiiiiccccccniiiicccccccccccniiiiiiiiccccccniiiiccccccccccccniiiiiiiicccccniiiicccccccccccccniiiiiiiiccccc'''''''''''''''''''cniiiicccncccncccc'''''''''''''''''cncccccccccn%%%%%%%%%%%%%%%%%%%%%%%ncccccccncccccccccccccccccccccccccccccc''''''''''''''ccccncccccc''''''''''''''''''''''''''''''''''''''''''''''''''''''''''ccccc%%%%%%%%%%%%%%%%%%%%%niiii'''''''''''''''''''cccnccccc'''''''''''''''''''cc%%%%%%%%%%%%%%%%%ncccccccccccccccccniiiicccncccccccccccccccccniiiicccc%%%%%%%%%%%%%%%ncccccccccccccccccniiiicccc%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%nn
 </pre><h2 id="11">overwrite if requested, save backup ('*bkp.m')</h2><pre class="codeinput"><span class="keyword">if</span> overwrite &amp;&amp; ~isequal(txt1,txt0)
     [pat1,pat2,pat3] = fileparts(fileName);
     <span class="keyword">if</span> ~isempty(pat1)
@@ -276,7 +277,7 @@ ans =
 
     '% function test1
      
-     for ii = 1:10
+     for ii = 1:10;
          x = 5;
          
          if ii == 2
