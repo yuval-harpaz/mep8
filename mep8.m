@@ -43,14 +43,17 @@ noSpaceNear = '~><=|&'; % between which chars not to isert space, e.g. ~=   &&
 
 %% check compatibility / code warnings
 disp('running checkcode: ')
-issuesCodecheck = checkcode(fileName,'-string');
+issuesCodecheck = checkcode(fileName,'-string','-config=factory');
+% process code to find variable names etc
+% see http://undocumentedmatlab.com/blog/parsing-mlint-code-analyzer-output
+ccEdit = checkcode(fileName,'-edit'); % -ty gives variable lines
+ccEdit=ccEdit(1).message;
 if isempty(issuesCodecheck)
     fprintf('\b done \n\n')
 else
     disp(issuesCodecheck);
 end
 issues.codeCheck=issuesCodecheck;
-
 %% read text file
 f = fopen(fileName);
 txt0 = native2unicode(fread(f,'uint8=>uint8')');
@@ -183,6 +186,22 @@ for inserti = sort(find(insertSpace),'descend')
     txt1 = insertAfter(txt1,inserti,' ');
     content = insertAfter(content,inserti,'c');
 end
+%% variable names
+vLoc = strfind(ccEdit,' V ');
+varLines=regexp(ccEdit,newline,'split')';
+varLines=varLines(contains(varLines,' V '));
+if isempty(varLines)
+    error('no variables in code?')
+end
+% get variable names from text
+spaceLims=find(diff(ismember(varLines{1},' '))>0,2)+1;
+varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),' ',''),varLines, 'UniformOutput',false);
+startWithUpper = cellfun(@(x) isequal(x(1),upper(x(1))),varNames);
+if any(startWithUpper)
+    disp(join(['Variables with upper-case first letter:',varNames(startWithUpper)']))
+end
+%% line length
+
 
 %% overwrite if requested, save backup ('*bkp.m')
 if overwrite && ~isequal(txt1,txt0)

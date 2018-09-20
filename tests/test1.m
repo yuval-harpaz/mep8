@@ -4,7 +4,7 @@ for ii=1:10;
   x=5;  
     
     if ii==2
-      x=x+1/3;
+      Xup=x+1/3;
     elseif ii~=3
     x=ii;   
     elseif x >=1000
@@ -25,7 +25,7 @@ txt0 = native2unicode(fread(f,'uint8=>uint8')');
 disp(['here I test 3 dots + comment               XXXXXXXXXXXXX',... % here a comment lays
     ' more string here']);
 disp('3 dots here ...  ') % more dots tests
-x = 5+3+10000-...
+m = 5+3+10000-...
     34;
 x = x+3+10000-...
     35; % comment here?
