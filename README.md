@@ -14,5 +14,6 @@ you can run on default test file:
 ```markdown
 mep8;
 ```
-to see code + output of default test go to [mep8.html](https://yuval-harpaz.github.io/mep8/html/mep8.html)
+### Status
+The code runs checkcode and indentcode to use inherent matlab tools. It then uses splitcode (see a copy [here](https://github.com/pdollar/toolbox/blob/master/external/m2html/private/splitcode.m)) which is a [M2HTML](https://www.artefact.tk/software/matlab/m2html/) function. This helps us decide where comments and strings are in the text. I went further to pad equal signs with spaces, but not when in strings or comments. a ToDo list, as well as code, input and output is in [mep8.html](https://yuval-harpaz.github.io/mep8/html/mep8.html)
 
