@@ -191,15 +191,51 @@ vLoc = strfind(ccEdit,' V ');
 varLines=regexp(ccEdit,newline,'split')';
 varLines=varLines(contains(varLines,' V '));
 if isempty(varLines)
-    error('no variables in code?')
+    warning('no variables in code?')
+else
+    issuesVarNames='';
+    % get variable names from text
+    spaceLims=find(diff(ismember(varLines{1},' '))>0,2)+1;
+    varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),' ',''),varLines, 'UniformOutput',false);
+    startWithUpper = cellfun(@(x) isequal(x(1),upper(x(1))),varNames);
+    if any(startWithUpper)
+        tmp=join(varNames(startWithUpper)');
+        issuesVarNames=[issuesVarNames,...
+            'Variable names with upper-case first letter: ',tmp{1},newline];
+    end
+    
+    varLength = cellfun(@(x) length(x),varNames);
+    if any(varLength==1)
+        tmp=join(varNames(varLength==1)');
+        issuesVarNames=[issuesVarNames,'one letter variable names: ',tmp{1},newline];
+    end
+    % look for two words such as finaltest
+    words=urlread('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt');
+    words=regexp(words,newline,'split')';
+    exclude=cellfun(@(x) length(x),words)<2; % single letters are not words
+    exclude(123+find(cellfun(@(x) length(x),words(124:end))==2))=true; % two letters (infrequent, below 130) are not words
+    words(exclude)=[];
+    for vari=1:length(varNames)
+        if length(varNames{vari})>3
+            for cutPoint=3:length(varNames{vari})-2
+                w1=ismember(lower(varNames{vari}(1:cutPoint)),words);
+                w2=ismember(lower(varNames{vari}(cutPoint+1:end)),words);
+                if w1 && w2
+                    optionCap=[lower(varNames{vari}(1:cutPoint)),...
+                        upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
+                    option_=[lower(varNames{vari}(1:cutPoint)),...
+                        '_',lower(varNames{vari}(cutPoint+1:end))];
+                    if ~isequal(varNames{vari},optionCap)
+                        issuesVarNames=[issuesVarNames,['consider renaming ',varNames{vari},' as ',optionCap,' or ',option_,newline]];
+                    end
+                end
+            end
+        end
+    end
+    
 end
-% get variable names from text
-spaceLims=find(diff(ismember(varLines{1},' '))>0,2)+1;
-varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),' ',''),varLines, 'UniformOutput',false);
-startWithUpper = cellfun(@(x) isequal(x(1),upper(x(1))),varNames);
-if any(startWithUpper)
-    disp(join(['Variables with upper-case first letter:',varNames(startWithUpper)']))
-end
+disp(issuesVarNames);
+issues.varNames=issuesVarNames;
 %% line length
 
 
