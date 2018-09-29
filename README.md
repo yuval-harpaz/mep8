@@ -1,15 +1,18 @@
-## Welcome to MEP 8 project, pep8 for matlab
-This toom (mep8.m) was created with the thought of making a tool to enhance matlab code style, similarly tp Python Enhancement Proposal 8 (**PEP8**).
-Please participate, test and cotribute. This is more work than one volunteer could do. The goal - make matlab code easy to read and standardized.
+## Welcome to MEP 8 project, Style Guide for Matlab Code
+This tool (mep8.m) was created to help cleaning Matlab code, similarly tp Python Enhancement Proposal 8 (**PEP8**).
+ The goal - make matlab code easy to read and standardized. Please participate by testing it on your own code, send feedback and contribute to mep8.m
 
 ### Installation
-The code [mep8.m](https://github.com/yuval-harpaz/mep8/blob/master/mep8.m) should work as stand-alone. If you want it to run on the default [tests/test1.m](https://github.com/yuval-harpaz/mep8/blob/master/tests/test1.m), clone or download the whole repo. Then you can run mep8 with no input arguments.
+The code [mep8.m](https://github.com/yuval-harpaz/mep8/blob/master/mep8.m) should work as stand-alone. If you want to apply mep8 on the default file [tests/test1.m](https://github.com/yuval-harpaz/mep8/blob/master/tests/test1.m), clone or download the whole repo. Then you can run mep8 with no input arguments.
 
-### Examples
-run:
+### Input / Output
 ```markdown
-[txt,issues]=mep8(fileName);
+[txt,issues]=mep8(fileName, overwrite);
 ```
+**fileName** is <path+> file name of the code you want to check / fix.
+**overwrite** is true when you want to replace the original code with the fixed version (**txt** output). when overwrite is true, a backup file is created for the original code.
+**txt** is a new version of the code after fixing indentation and padding "=" with spaces. Most issue types are NOT fixed, in order not to break the code (renaming variables, ending for loops etc).
+**issues** is a struct with fields describing the different issues diagnosed in different stages, such as missing ends to for loops, bad indentation, too short variable names (one letter) or variable names which are built-in matlab functions.
 you can run on default test file:
 ```markdown
 mep8;

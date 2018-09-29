@@ -170,7 +170,7 @@ insertSpace(ismember(content,'''')) = false;
 tmp = [strrep(txt1,newline,'N');strrep(num2str(insertSpace),' ','');content];
 disp('location of "insert space after = "');
 disp(tmp);
-if ~isequal(unique(content(insertSpace)),'c')
+if ~isempty(unique(content(insertSpace))) && ~isequal(unique(content(insertSpace)),'c')
     warning('space insertion not in code "c"')
 end
 spacedLines=unique(row(insertSpace));
@@ -187,7 +187,6 @@ for inserti = sort(find(insertSpace),'descend')
     content = insertAfter(content,inserti,'c');
 end
 %% variable names
-vLoc = strfind(ccEdit,' V ');
 varLines=regexp(ccEdit,newline,'split')';
 varLines=varLines(contains(varLines,' V '));
 if isempty(varLines)
@@ -210,29 +209,46 @@ else
         issuesVarNames=[issuesVarNames,'one letter variable names: ',tmp{1},newline];
     end
     % look for two words such as finaltest
-    words=urlread('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt');
-    words=regexp(words,newline,'split')';
-    exclude=cellfun(@(x) length(x),words)<2; % single letters are not words
-    exclude(123+find(cellfun(@(x) length(x),words(124:end))==2))=true; % two letters (infrequent, below 130) are not words
-    words(exclude)=[];
-    for vari=1:length(varNames)
-        if length(varNames{vari})>3
-            for cutPoint=3:length(varNames{vari})-2
-                w1=ismember(lower(varNames{vari}(1:cutPoint)),words);
-                w2=ismember(lower(varNames{vari}(cutPoint+1:end)),words);
-                if w1 && w2
-                    optionCap=[lower(varNames{vari}(1:cutPoint)),...
-                        upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
-                    option_=[lower(varNames{vari}(1:cutPoint)),...
-                        '_',lower(varNames{vari}(cutPoint+1:end))];
-                    if ~isequal(varNames{vari},optionCap)
-                        issuesVarNames=[issuesVarNames,['consider renaming ',varNames{vari},' as ',optionCap,' or ',option_,newline]];
+    if exist('words4mep8.mat','file')
+        load words4mep8
+    else
+        try
+            words=urlread('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt');
+            words=regexp(words,newline,'split')';
+            exclude=cellfun(@(x) length(x),words)<2; % single letters are not words
+            exclude(123+find(cellfun(@(x) length(x),words(124:end))==2))=true; % two letters (infrequent, below 130) are not words
+            words(exclude)=[];
+        catch
+            disp('words list requires internet connections')
+        end
+    end
+    if exist('words','var')
+        for vari=1:length(varNames)
+            if length(varNames{vari})>3
+                if ~ismember(lower(varNames{vari}),words)
+                    for cutPoint=3:length(varNames{vari})-2
+                        w1=ismember(lower(varNames{vari}(1:cutPoint)),words);
+                        w2=ismember(lower(varNames{vari}(cutPoint+1:end)),words);
+                        if w1 && w2
+                            optionCap=[lower(varNames{vari}(1:cutPoint)),...
+                                upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
+                            option_=[lower(varNames{vari}(1:cutPoint)),...
+                                '_',lower(varNames{vari}(cutPoint+1:end))];
+                            if ~isequal(varNames{vari},optionCap)
+                                issuesVarNames=[issuesVarNames,['consider renaming ',varNames{vari},' as ',optionCap,' or ',option_,newline]];
+                            end
+                        end
                     end
                 end
             end
         end
     end
-    
+    for vari=1:length(varNames)
+        otherUses=existDict(varNames{vari});
+        if ~isempty(otherUses)
+            issuesVarNames=[issuesVarNames,'Variable ',otherUses,newline];
+        end
+    end
 end
 disp(issuesVarNames);
 issues.varNames=issuesVarNames;
@@ -297,17 +313,17 @@ quotetransp = [double('_''.)}]') ...
     double('A'):double('Z') ...
     double('0'):double('9') ...
     double('a'):double('z')];
-flagstring = 0;
+flagString = 0;
 flagdoublequote = 0;
 jquote = [];
 for i=1:length(iquote)
-    if ~flagstring
+    if ~flagString
         if iquote(i) > 1 && any(quotetransp == double(code(iquote(i)-1)))
             % => 'transpose';
         else
             % => 'beginstring';
             jquote(size(jquote,1)+1,:) = [iquote(i) length(code)];
-            flagstring = 1;
+            flagString = 1;
         end
     else % if flagstring
         if flagdoublequote || ...
@@ -317,7 +333,7 @@ for i=1:length(iquote)
         else
             % => 'endstring';
             jquote(size(jquote,1),2) = iquote(i);
-            flagstring = 0;
+            flagString = 0;
         end
     end
 end
@@ -366,4 +382,28 @@ for i=1:size(icode,1)
     elseif i == size(icode,1) && icode(i,2) < length(code)
         splitc{end+1} = code(icode(i,2)+1:end);
     end
+end
+function str=existDict(var4existDict)
+% check what sort of thing is var4existDict
+existNum=exist(var4existDict); %#ok<EXIST>
+str='';
+switch existNum
+    case 0
+        str=''; %if NAME does not exist
+    case 1
+        str=''; % NAME is a variable in the workspace
+    case 2
+        str= [var4existDict,' is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt)'];
+    case 3
+        str= [var4existDict,' is a MEX-file on the MATLAB search path'];
+    case 4
+        str= [var4existDict,' is a Simulink model or library file on the MATLAB search path'];
+    case 5
+        str= [var4existDict,' is a built-in MATLAB function'];
+    case 6
+        str= [var4existDict,' is a P-code file on the MATLAB search path'];
+    case 7
+        str= ''; % a folder
+    case 8
+        str= [var4existDict,' is a class'];
 end
