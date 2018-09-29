@@ -46,13 +46,13 @@ issuesCodecheck = checkcode(fileName,'-string','-config=factory');
 % process code to find variable names etc
 % see http://undocumentedmatlab.com/blog/parsing-mlint-code-analyzer-output
 ccEdit = checkcode(fileName,'-edit'); % -ty gives variable lines
-ccEdit=ccEdit(1).message;
+ccEdit = ccEdit(1).message;
 if isempty(issuesCodecheck)
     fprintf('\b done \n\n')
 else
     disp(issuesCodecheck);
 end
-issues.codeCheck=issuesCodecheck;
+issues.codeCheck = issuesCodecheck;
 %% read text file
 f = fopen(fileName);
 txt0 = native2unicode(fread(f,'uint8=>uint8')');
@@ -79,9 +79,9 @@ startLine1 = [1,newLines1(1:end-1)+1];
 % go line by line and check differences in spaces location
 % along the way, process txt1 and label the contents
 %
-content=repmat('c',1,length(txt1)); % c  is for code (not cookey)
-row=nan(size(txt1));
-content(strfind(txt1,newline))='n';
+content = repmat('c',1,length(txt1)); % c  is for code (not cookey)
+row = nan(size(txt1));
+content(strfind(txt1,newline)) = 'n';
 issuesIndent = '';
 for linei = 1:length(startLine0)
     line0 = txt0(startLine0(linei):newLines0(linei)-1);
@@ -95,41 +95,41 @@ for linei = 1:length(startLine0)
     indent1 = find(~spaceIdx1,1);
     
     if isempty(indent1) && any(spaceIdx1) % a line with nothing but spaces
-        content(startLine1(linei):startLine1(linei)+length(line1)-1)='i';
-    elseif indent1>1 % a line with spaces and then something else
-        content(startLine1(linei):startLine1(linei)+indent1-2)='i';
+        content(startLine1(linei):startLine1(linei)+length(line1)-1) = 'i';
+    elseif indent1 > 1 % a line with spaces and then something else
+        content(startLine1(linei):startLine1(linei)+indent1-2) = 'i';
     end
-    row(startLine1(linei):newLines1(linei))=linei;
+    row(startLine1(linei):newLines1(linei)) = linei;
     % split to look for strings and comments (from m2html)
     splitc = splitCode(line1);
-    start=startLine1(linei); % marks beginning of split strings
-    for spliti=1:length(splitc)
+    start = startLine1(linei); % marks beginning of split strings
+    for spliti = 1:length(splitc)
         if ~isempty(splitc{spliti})
             switch splitc{spliti}(1)
                 case '%'
-                    content(start:start+length(splitc{spliti})-1)='%';
+                    content(start:start+length(splitc{spliti})-1) = '%';
                 case ''''
-                    content(start:start+length(splitc{spliti})-1)='''';
+                    content(start:start+length(splitc{spliti})-1) = '''';
             end
         end
-        start=start+length(splitc{spliti}); % location of next split
+        start = start+length(splitc{spliti}); % location of next split
     end
     
     if ~strcmp(line0,line1)
-        if indent1>indent0
+        if indent1 > indent0
             num = num2str(indent1-indent0);
             msg = ['add ',num,' spaces. '];
-        elseif indent1<indent0
+        elseif indent1 < indent0
             num = num2str(indent0-indent1);
             msg = ['remove ',num,' spaces. '];
         end
         if sum(~spaceIdx0) == sum(~spaceIdx1)
             lastNotSpace0 = find(~spaceIdx0,1,'last');
             lastNotSpace1 = find(~spaceIdx1,1,'last');
-            if lastNotSpace1<length(line1)
+            if lastNotSpace1 < length(line1)
                 error('last fixed charecter should not be space')
             end
-            if lastNotSpace0<length(line0)
+            if lastNotSpace0 < length(line0)
                 msg = [msg,num2str(length(line0)-lastNotSpace0),...
                     ' extra spaces in end of line'];
             end
@@ -142,7 +142,7 @@ if isempty(issuesIndent)
 else
     disp(issuesIndent)
 end
-issues.indent=issuesIndent;
+issues.indent = issuesIndent;
 
 %% look for '=' or other stuff to pad with spaces
 disp(['padding ',spacePad,' with spaces: '])
@@ -155,7 +155,7 @@ if ~isempty(logi)
     %spacei = find(insertSpace);
     [~,ii] = ismember(logi,find(toPad)-1);
     if any(ii)
-        logi = logi(ii>0);
+        logi = logi(ii > 0);
         insertSpace(logi) = false;
         insertSpace(logi-1) = true;
     end
@@ -166,75 +166,87 @@ insertSpace(find(ismember(txt1,' '))-1) = false;  % dont insert space before spa
 % avoid touching strings and comments
 insertSpace(ismember(content,'%')) = false;
 insertSpace(ismember(content,'''')) = false;
-tmp = [strrep(txt1,newline,'N');strrep(num2str(insertSpace),' ','');content];
-disp('location of "insert space after = "');
-disp(tmp);
-if ~isempty(unique(content(insertSpace))) && ~isequal(unique(content(insertSpace)),'c')
-    warning('space insertion not in code "c"')
+issuesSpace = '';
+if sum(insertSpace) > 0
+    tmp1 = 'code                                               ';
+    tmp1(2,:) = 'insert space after                                 ';
+    tmp1(3,:) = ['c=code, %=comment, i=indent, ''','=string, n=newline   '];
+    tmp2 = strrep(num2str(insertSpace),' ','');
+    tmp2 = strrep(tmp2,'0','_');
+    tmp2 = strrep(tmp2,'1','^');
+    tmp = [strrep(txt1,newline,'N');tmp2;content];
+    disp('location of "insert space after"');
+    disp([tmp1,tmp]);
+    if ~isempty(unique(content(insertSpace))) && ~isequal(unique(content(insertSpace)),'c')
+        error('space insertion not in code "c"')
+    end
+    spacedLines = unique(row(insertSpace));
+    for linei = 1:length(spacedLines)
+        loc = find(insertSpace & row == spacedLines(linei));
+        padded = spacePad(ismember(spacePad,txt1(loc(1)-1:loc(end))));
+        issuesSpace = [issuesSpace,'L ',num2str(spacedLines(linei)),': ',...
+            padded,' padded with spaces.',newline];
+    end
+    disp(issuesSpace)
+else
+    fprintf('\b no reason for padding \n\n')
 end
-spacedLines=unique(row(insertSpace));
-issuesSpace='';
-for linei=1:length(spacedLines)
-    loc=find(insertSpace & row == spacedLines(linei));
-    padded=spacePad(ismember(spacePad,txt1(loc(1)-1:loc(end))));
-    issuesSpace=[issuesSpace,'L ',num2str(spacedLines(linei)),': ',...
-        padded,' padded with spaces.',newline];
-end
-issues.spacePad=issuesSpace;
+issues.spacePad = issuesSpace;
 for inserti = sort(find(insertSpace),'descend')
     txt1 = insertAfter(txt1,inserti,' ');
     content = insertAfter(content,inserti,'c');
 end
 %% variable names
-varLines=regexp(ccEdit,newline,'split')';
-varLines=varLines(contains(varLines,' V '));
+varLines = regexp(ccEdit,newline,'split')';
+varLines = varLines(contains(varLines,' V '));
 if isempty(varLines)
     warning('no variables in code?')
 else
-    issuesVarNames='';
+    issuesVarNames = '';
     % get variable names from text
-    spaceLims=find(diff(ismember(varLines{1},' '))>0,2)+1;
+    spaceLims = find(diff(ismember(varLines{1},' ')) > 0,2)+1;
     varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),' ',''),varLines, 'UniformOutput',false);
+    varNames = unique(varNames);
     startWithUpper = cellfun(@(x) isequal(x(1),upper(x(1))),varNames);
     if any(startWithUpper)
-        tmp=join(varNames(startWithUpper)');
-        issuesVarNames=[issuesVarNames,...
+        tmp = join(varNames(startWithUpper)');
+        issuesVarNames = [issuesVarNames,...
             'Variable names with upper-case first letter: ',tmp{1},newline];
     end
     
     varLength = cellfun(@(x) length(x),varNames);
-    if any(varLength==1)
-        tmp=join(varNames(varLength==1)');
-        issuesVarNames=[issuesVarNames,'one letter variable names: ',tmp{1},newline];
+    if any(varLength == 1)
+        tmp = join(varNames(varLength == 1)');
+        issuesVarNames = [issuesVarNames,'one letter variable names: ',tmp{1},newline];
     end
     % look for two words such as finaltest
     if exist('words4mep8.mat','file')
         load words4mep8
     else
         try
-            words=urlread('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt');
-            words=regexp(words,newline,'split')';
-            exclude=cellfun(@(x) length(x),words)<2; % single letters are not words
-            exclude(123+find(cellfun(@(x) length(x),words(124:end))==2))=true; % two letters (infrequent, below 130) are not words
-            words(exclude)=[];
+            words = urlread('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt');
+            words = regexp(words,newline,'split')';
+            exclude = cellfun(@(x) length(x),words) < 2; % single letters are not words
+            exclude(123+find(cellfun(@(x) length(x),words(124:end)) == 2)) = true; % two letters (infrequent, below 130) are not words
+            words(exclude) = [];
         catch
             disp('words list requires internet connections')
         end
     end
     if exist('words','var')
-        for vari=1:length(varNames)
-            if length(varNames{vari})>3
+        for vari = 1:length(varNames)
+            if length(varNames{vari}) > 3
                 if ~ismember(lower(varNames{vari}),words)
-                    for cutPoint=3:length(varNames{vari})-2
-                        w1=ismember(lower(varNames{vari}(1:cutPoint)),words);
-                        w2=ismember(lower(varNames{vari}(cutPoint+1:end)),words);
+                    for cutPoint = 3:length(varNames{vari})-2
+                        w1 = ismember(lower(varNames{vari}(1:cutPoint)),words);
+                        w2 = ismember(lower(varNames{vari}(cutPoint+1:end)),words);
                         if w1 && w2
-                            optionCap=[lower(varNames{vari}(1:cutPoint)),...
+                            optionCap = [lower(varNames{vari}(1:cutPoint)),...
                                 upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
-                            option_=[lower(varNames{vari}(1:cutPoint)),...
+                            option_ = [lower(varNames{vari}(1:cutPoint)),...
                                 '_',lower(varNames{vari}(cutPoint+1:end))];
                             if ~isequal(varNames{vari},optionCap)
-                                issuesVarNames=[issuesVarNames,['consider renaming ',varNames{vari},' as ',optionCap,' or ',option_,newline]];
+                                issuesVarNames = [issuesVarNames,['consider renaming ',varNames{vari},' as ',optionCap,' or ',option_,newline]];
                             end
                         end
                     end
@@ -242,15 +254,15 @@ else
             end
         end
     end
-    for vari=1:length(varNames)
-        otherUses=existDict(varNames{vari});
+    for vari = 1:length(varNames)
+        otherUses = existDict(varNames{vari});
         if ~isempty(otherUses)
-            issuesVarNames=[issuesVarNames,'Variable ',otherUses,newline];
+            issuesVarNames = [issuesVarNames,'Variable ',otherUses,newline];
         end
     end
 end
 disp(issuesVarNames);
-issues.varNames=issuesVarNames;
+issues.varNames = issuesVarNames;
 %% line length
 
 
@@ -315,7 +327,7 @@ quotetransp = [double('_''.)}]') ...
 flagString = 0;
 flagdoublequote = 0;
 jquote = [];
-for i=1:length(iquote)
+for i = 1:length(iquote)
     if ~flagString
         if iquote(i) > 1 && any(quotetransp == double(code(iquote(i)-1)))
             % => 'transpose';
@@ -340,7 +352,7 @@ end
 %- Find if a portion of code is a comment
 ipercent = strfind(code,'%');
 jpercent = [];
-for i=1:length(ipercent)
+for i = 1:length(ipercent)
     if isempty(jquote) || ...
             ~any((ipercent(i) > jquote(:,1)) & (ipercent(i) < jquote(:,2)))
         jpercent = [ipercent(i) length(code)];
@@ -374,7 +386,7 @@ if isempty(icode)
 elseif icode(1,1) > 1
     splitc{1} = code(1:icode(1,1)-1);
 end
-for i=1:size(icode,1)
+for i = 1:size(icode,1)
     splitc{end+1} = code(icode(i,1):icode(i,2));
     if i < size(icode,1) && icode(i+1,1) > icode(i,2) + 1
         splitc{end+1} = code((icode(i,2)+1):(icode(i+1,1)-1));
@@ -382,27 +394,27 @@ for i=1:size(icode,1)
         splitc{end+1} = code(icode(i,2)+1:end);
     end
 end
-function str=existDict(var4existDict)
+function str = existDict(var4existDict)
 % check what sort of thing is var4existDict
-existNum=exist(var4existDict); %#ok<EXIST>
-str='';
+existNum = exist(var4existDict); %#ok<EXIST>
+str = '';
 switch existNum
     case 0
-        str=''; %if NAME does not exist
+        str = ''; %if NAME does not exist
     case 1
-        str=''; % NAME is a variable in the workspace
+        str = ''; % NAME is a variable in the workspace
     case 2
-        str= [var4existDict,' is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt)'];
+        str = [var4existDict,' is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt)'];
     case 3
-        str= [var4existDict,' is a MEX-file on the MATLAB search path'];
+        str = [var4existDict,' is a MEX-file on the MATLAB search path'];
     case 4
-        str= [var4existDict,' is a Simulink model or library file on the MATLAB search path'];
+        str = [var4existDict,' is a Simulink model or library file on the MATLAB search path'];
     case 5
-        str= [var4existDict,' is a built-in MATLAB function'];
+        str = [var4existDict,' is a built-in MATLAB function'];
     case 6
-        str= [var4existDict,' is a P-code file on the MATLAB search path'];
+        str = [var4existDict,' is a P-code file on the MATLAB search path'];
     case 7
-        str= ''; % a folder
+        str = ''; % a folder
     case 8
-        str= [var4existDict,' is a class'];
+        str = [var4existDict,' is a class'];
 end
