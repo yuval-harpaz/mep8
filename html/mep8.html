@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>mep8</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-09-26"><meta name="DC.source" content="mep8.m"><style type="text/css">
+      --><title>mep8</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-09-29"><meta name="DC.source" content="mep8.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -81,9 +81,8 @@ strings and comments in the code, not to be touched when fixing (see
 splitCode below).
 - pad "=" with spaces, or any char defined in spacePad variable</pre><h2 id="5">To Do</h2><pre>- polish and test on more code
 - decide what to do with * / .^ etc
-- try avoiding extra spaces inside code lines
-- try add spaces after , ; and such in middle of line, but not before
-- check variable names - this is a hard one, make lower first letter etc
+- try avoiding extra spaces inside code lines (e.g. var1     =    15;)
+- try add spaces after , ; and such in middle of line
 - do something about line lengths</pre><h2 id="6">Assign default values</h2><p>when no fileName is given (no such var or empty) take default test file</p><pre class="codeinput">fileName = defaultVal(<span class="string">'fileName'</span>,[fileparts(which(<span class="string">'mep8.m'</span>)),<span class="string">'/tests/test1.m'</span>]);
 <span class="keyword">if</span> ~isequal(fileName(end-1:end),<span class="string">'.m'</span>)
     tmp = which(fileName);
@@ -229,7 +228,7 @@ insertSpace(ismember(content,<span class="string">''''</span>)) = false;
 tmp = [strrep(txt1,newline,<span class="string">'N'</span>);strrep(num2str(insertSpace),<span class="string">' '</span>,<span class="string">''</span>);content];
 disp(<span class="string">'location of "insert space after = "'</span>);
 disp(tmp);
-<span class="keyword">if</span> ~isequal(unique(content(insertSpace)),<span class="string">'c'</span>)
+<span class="keyword">if</span> ~isempty(unique(content(insertSpace))) &amp;&amp; ~isequal(unique(content(insertSpace)),<span class="string">'c'</span>)
     warning(<span class="string">'space insertion not in code "c"'</span>)
 <span class="keyword">end</span>
 spacedLines=unique(row(insertSpace));
@@ -250,8 +249,7 @@ location of "insert space after = "
 % function test1NNfor ii=1:10;N    x=5;N    N    if ii==2N        Xup=x+1/3;N    elseif ii~=3N        x=ii;N    elseif x &gt;=1000N        x=999;N    elseif x&lt;=0N        x = 1;N    elseif x &gt;34N        x=34;N    elseif x &lt;=54N        disp('x is okay I guess')N    endNendNstr='I got  a =sign!';Ndisp(str)N% treat &lt;= respectfullyNdisp(x)Ntxt0 = native2unicode(fread(f,'uint8=&gt;uint8')');Ndisp(['here I test 3 dots + comment               XXXXXXXXXXXXX',... % here a comment laysN    ' more string here']);Ndisp('3 dots here ...  ') % more dots testsNm = 5+3+10000-...N    34;Nx = x+3+10000-...N    35; % comment here?Nfinaltest = x+3+10000-...N    35; % comment there? with 'qoutes'?NN
 00000000000000000000000110000000000110000000000000000101000000000000110000000000000000000101000000000011000000000000000000100000000000001100000000000000001010000000000000000000000000000001000000000001100000000000000000010000000000000000000000000000000000000000000000000001100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 %%%%%%%%%%%%%%%%nnccccccccccccniiiiccccniiiiniiiiccccccccniiiiiiiiccccccccccniiiiccccccccccccniiiiiiiicccccniiiicccccccccccccccniiiiiiiiccccccniiiicccccccccccniiiiiiiiccccccniiiiccccccccccccniiiiiiiicccccniiiicccccccccccccniiiiiiiiccccc'''''''''''''''''''cniiiicccncccncccc'''''''''''''''''cncccccccccn%%%%%%%%%%%%%%%%%%%%%%%ncccccccncccccccccccccccccccccccccccccc''''''''''''''ccccncccccc''''''''''''''''''''''''''''''''''''''''''''''''''''''''''ccccc%%%%%%%%%%%%%%%%%%%%%niiii'''''''''''''''''''cccnccccc'''''''''''''''''''cc%%%%%%%%%%%%%%%%%ncccccccccccccccccniiiicccncccccccccccccccccniiiicccc%%%%%%%%%%%%%%%ncccccccccccccccccccccccccniiiicccc%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%nn
-</pre><h2 id="11">variable names</h2><pre class="codeinput">vLoc = strfind(ccEdit,<span class="string">' V '</span>);
-varLines=regexp(ccEdit,newline,<span class="string">'split'</span>)';
+</pre><h2 id="11">variable names</h2><pre class="codeinput">varLines=regexp(ccEdit,newline,<span class="string">'split'</span>)';
 varLines=varLines(contains(varLines,<span class="string">' V '</span>));
 <span class="keyword">if</span> isempty(varLines)
     warning(<span class="string">'no variables in code?'</span>)
@@ -273,29 +271,46 @@ varLines=varLines(contains(varLines,<span class="string">' V '</span>));
         issuesVarNames=[issuesVarNames,<span class="string">'one letter variable names: '</span>,tmp{1},newline];
     <span class="keyword">end</span>
     <span class="comment">% look for two words such as finaltest</span>
-    words=urlread(<span class="string">'https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt'</span>);
-    words=regexp(words,newline,<span class="string">'split'</span>)';
-    exclude=cellfun(@(x) length(x),words)&lt;2; <span class="comment">% single letters are not words</span>
-    exclude(123+find(cellfun(@(x) length(x),words(124:end))==2))=true; <span class="comment">% two letters (infrequent, below 130) are not words</span>
-    words(exclude)=[];
-    <span class="keyword">for</span> vari=1:length(varNames)
-        <span class="keyword">if</span> length(varNames{vari})&gt;3
-            <span class="keyword">for</span> cutPoint=3:length(varNames{vari})-2
-                w1=ismember(lower(varNames{vari}(1:cutPoint)),words);
-                w2=ismember(lower(varNames{vari}(cutPoint+1:end)),words);
-                <span class="keyword">if</span> w1 &amp;&amp; w2
-                    optionCap=[lower(varNames{vari}(1:cutPoint)),<span class="keyword">...</span>
-                        upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
-                    option_=[lower(varNames{vari}(1:cutPoint)),<span class="keyword">...</span>
-                        <span class="string">'_'</span>,lower(varNames{vari}(cutPoint+1:end))];
-                    <span class="keyword">if</span> ~isequal(varNames{vari},optionCap)
-                        issuesVarNames=[issuesVarNames,[<span class="string">'consider renaming '</span>,varNames{vari},<span class="string">' as '</span>,optionCap,<span class="string">' or '</span>,option_,newline]];
+    <span class="keyword">if</span> exist(<span class="string">'words4mep8.mat'</span>,<span class="string">'file'</span>)
+        load <span class="string">words4mep8</span>
+    <span class="keyword">else</span>
+        <span class="keyword">try</span>
+            words=urlread(<span class="string">'https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt'</span>);
+            words=regexp(words,newline,<span class="string">'split'</span>)';
+            exclude=cellfun(@(x) length(x),words)&lt;2; <span class="comment">% single letters are not words</span>
+            exclude(123+find(cellfun(@(x) length(x),words(124:end))==2))=true; <span class="comment">% two letters (infrequent, below 130) are not words</span>
+            words(exclude)=[];
+        <span class="keyword">catch</span>
+            disp(<span class="string">'words list requires internet connections'</span>)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> exist(<span class="string">'words'</span>,<span class="string">'var'</span>)
+        <span class="keyword">for</span> vari=1:length(varNames)
+            <span class="keyword">if</span> length(varNames{vari})&gt;3
+                <span class="keyword">if</span> ~ismember(lower(varNames{vari}),words)
+                    <span class="keyword">for</span> cutPoint=3:length(varNames{vari})-2
+                        w1=ismember(lower(varNames{vari}(1:cutPoint)),words);
+                        w2=ismember(lower(varNames{vari}(cutPoint+1:end)),words);
+                        <span class="keyword">if</span> w1 &amp;&amp; w2
+                            optionCap=[lower(varNames{vari}(1:cutPoint)),<span class="keyword">...</span>
+                                upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
+                            option_=[lower(varNames{vari}(1:cutPoint)),<span class="keyword">...</span>
+                                <span class="string">'_'</span>,lower(varNames{vari}(cutPoint+1:end))];
+                            <span class="keyword">if</span> ~isequal(varNames{vari},optionCap)
+                                issuesVarNames=[issuesVarNames,[<span class="string">'consider renaming '</span>,varNames{vari},<span class="string">' as '</span>,optionCap,<span class="string">' or '</span>,option_,newline]];
+                            <span class="keyword">end</span>
+                        <span class="keyword">end</span>
                     <span class="keyword">end</span>
                 <span class="keyword">end</span>
             <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-
+    <span class="keyword">for</span> vari=1:length(varNames)
+        otherUses=existDict(varNames{vari});
+        <span class="keyword">if</span> ~isempty(otherUses)
+            issuesVarNames=[issuesVarNames,<span class="string">'Variable '</span>,otherUses,newline];
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
 <span class="keyword">end</span>
 disp(issuesVarNames);
 issues.varNames=issuesVarNames;
@@ -397,17 +412,17 @@ quotetransp = [double(<span class="string">'_''.)}]'</span>) <span class="keywor
     double(<span class="string">'A'</span>):double(<span class="string">'Z'</span>) <span class="keyword">...</span>
     double(<span class="string">'0'</span>):double(<span class="string">'9'</span>) <span class="keyword">...</span>
     double(<span class="string">'a'</span>):double(<span class="string">'z'</span>)];
-flagstring = 0;
+flagString = 0;
 flagdoublequote = 0;
 jquote = [];
 <span class="keyword">for</span> i=1:length(iquote)
-    <span class="keyword">if</span> ~flagstring
+    <span class="keyword">if</span> ~flagString
         <span class="keyword">if</span> iquote(i) &gt; 1 &amp;&amp; any(quotetransp == double(code(iquote(i)-1)))
             <span class="comment">% =&gt; 'transpose';</span>
         <span class="keyword">else</span>
             <span class="comment">% =&gt; 'beginstring';</span>
             jquote(size(jquote,1)+1,:) = [iquote(i) length(code)];
-            flagstring = 1;
+            flagString = 1;
         <span class="keyword">end</span>
     <span class="keyword">else</span> <span class="comment">% if flagstring</span>
         <span class="keyword">if</span> flagdoublequote || <span class="keyword">...</span>
@@ -417,7 +432,7 @@ jquote = [];
         <span class="keyword">else</span>
             <span class="comment">% =&gt; 'endstring';</span>
             jquote(size(jquote,1),2) = iquote(i);
-            flagstring = 0;
+            flagString = 0;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
 <span class="keyword">end</span>
@@ -467,6 +482,30 @@ splitc = {};
         splitc{end+1} = code(icode(i,2)+1:end);
     <span class="keyword">end</span>
 <span class="keyword">end</span>
+<span class="keyword">function</span> str=existDict(var4existDict)
+<span class="comment">% check what sort of thing is var4existDict</span>
+existNum=exist(var4existDict); <span class="comment">%#ok&lt;EXIST&gt;</span>
+str=<span class="string">''</span>;
+<span class="keyword">switch</span> existNum
+    <span class="keyword">case</span> 0
+        str=<span class="string">''</span>; <span class="comment">%if NAME does not exist</span>
+    <span class="keyword">case</span> 1
+        str=<span class="string">''</span>; <span class="comment">% NAME is a variable in the workspace</span>
+    <span class="keyword">case</span> 2
+        str= [var4existDict,<span class="string">' is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt)'</span>];
+    <span class="keyword">case</span> 3
+        str= [var4existDict,<span class="string">' is a MEX-file on the MATLAB search path'</span>];
+    <span class="keyword">case</span> 4
+        str= [var4existDict,<span class="string">' is a Simulink model or library file on the MATLAB search path'</span>];
+    <span class="keyword">case</span> 5
+        str= [var4existDict,<span class="string">' is a built-in MATLAB function'</span>];
+    <span class="keyword">case</span> 6
+        str= [var4existDict,<span class="string">' is a P-code file on the MATLAB search path'</span>];
+    <span class="keyword">case</span> 7
+        str= <span class="string">''</span>; <span class="comment">% a folder</span>
+    <span class="keyword">case</span> 8
+        str= [var4existDict,<span class="string">' is a class'</span>];
+<span class="keyword">end</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 function [txt1,issues] = mep8(fileName,overwrite)
@@ -491,9 +530,8 @@ function [txt1,issues] = mep8(fileName,overwrite)
 %% To Do
 %  - polish and test on more code
 %  - decide what to do with * / .^ etc
-%  - try avoiding extra spaces inside code lines
-%  - try add spaces after , ; and such in middle of line, but not before
-%  - check variable names - this is a hard one, make lower first letter etc
+%  - try avoiding extra spaces inside code lines (e.g. var1     =    15;)
+%  - try add spaces after , ; and such in middle of line
 %  - do something about line lengths
 
 %% Assign default values
@@ -641,7 +679,7 @@ insertSpace(ismember(content,'''')) = false;
 tmp = [strrep(txt1,newline,'N');strrep(num2str(insertSpace),' ','');content];
 disp('location of "insert space after = "');
 disp(tmp);
-if ~isequal(unique(content(insertSpace)),'c')
+if ~isempty(unique(content(insertSpace))) && ~isequal(unique(content(insertSpace)),'c')
     warning('space insertion not in code "c"')
 end
 spacedLines=unique(row(insertSpace));
@@ -658,7 +696,6 @@ for inserti = sort(find(insertSpace),'descend')
     content = insertAfter(content,inserti,'c');
 end
 %% variable names
-vLoc = strfind(ccEdit,' V ');
 varLines=regexp(ccEdit,newline,'split')';
 varLines=varLines(contains(varLines,' V '));
 if isempty(varLines)
@@ -681,29 +718,46 @@ else
         issuesVarNames=[issuesVarNames,'one letter variable names: ',tmp{1},newline];
     end
     % look for two words such as finaltest
-    words=urlread('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt');
-    words=regexp(words,newline,'split')';
-    exclude=cellfun(@(x) length(x),words)<2; % single letters are not words
-    exclude(123+find(cellfun(@(x) length(x),words(124:end))==2))=true; % two letters (infrequent, below 130) are not words
-    words(exclude)=[];
-    for vari=1:length(varNames)
-        if length(varNames{vari})>3
-            for cutPoint=3:length(varNames{vari})-2
-                w1=ismember(lower(varNames{vari}(1:cutPoint)),words);
-                w2=ismember(lower(varNames{vari}(cutPoint+1:end)),words);
-                if w1 && w2
-                    optionCap=[lower(varNames{vari}(1:cutPoint)),...
-                        upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
-                    option_=[lower(varNames{vari}(1:cutPoint)),...
-                        '_',lower(varNames{vari}(cutPoint+1:end))];
-                    if ~isequal(varNames{vari},optionCap)
-                        issuesVarNames=[issuesVarNames,['consider renaming ',varNames{vari},' as ',optionCap,' or ',option_,newline]];
+    if exist('words4mep8.mat','file')
+        load words4mep8
+    else
+        try
+            words=urlread('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt');
+            words=regexp(words,newline,'split')';
+            exclude=cellfun(@(x) length(x),words)<2; % single letters are not words
+            exclude(123+find(cellfun(@(x) length(x),words(124:end))==2))=true; % two letters (infrequent, below 130) are not words
+            words(exclude)=[];
+        catch
+            disp('words list requires internet connections')
+        end
+    end
+    if exist('words','var')
+        for vari=1:length(varNames)
+            if length(varNames{vari})>3
+                if ~ismember(lower(varNames{vari}),words)
+                    for cutPoint=3:length(varNames{vari})-2
+                        w1=ismember(lower(varNames{vari}(1:cutPoint)),words);
+                        w2=ismember(lower(varNames{vari}(cutPoint+1:end)),words);
+                        if w1 && w2
+                            optionCap=[lower(varNames{vari}(1:cutPoint)),...
+                                upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
+                            option_=[lower(varNames{vari}(1:cutPoint)),...
+                                '_',lower(varNames{vari}(cutPoint+1:end))];
+                            if ~isequal(varNames{vari},optionCap)
+                                issuesVarNames=[issuesVarNames,['consider renaming ',varNames{vari},' as ',optionCap,' or ',option_,newline]];
+                            end
+                        end
                     end
                 end
             end
         end
     end
-    
+    for vari=1:length(varNames)
+        otherUses=existDict(varNames{vari});
+        if ~isempty(otherUses)
+            issuesVarNames=[issuesVarNames,'Variable ',otherUses,newline];
+        end
+    end
 end
 disp(issuesVarNames);
 issues.varNames=issuesVarNames;
@@ -768,17 +822,17 @@ quotetransp = [double('_''.)}]') ...
     double('A'):double('Z') ...
     double('0'):double('9') ...
     double('a'):double('z')];
-flagstring = 0;
+flagString = 0;
 flagdoublequote = 0;
 jquote = [];
 for i=1:length(iquote)
-    if ~flagstring
+    if ~flagString
         if iquote(i) > 1 && any(quotetransp == double(code(iquote(i)-1)))
             % => 'transpose';
         else
             % => 'beginstring';
             jquote(size(jquote,1)+1,:) = [iquote(i) length(code)];
-            flagstring = 1;
+            flagString = 1;
         end
     else % if flagstring
         if flagdoublequote || ...
@@ -788,7 +842,7 @@ for i=1:length(iquote)
         else
             % => 'endstring';
             jquote(size(jquote,1),2) = iquote(i);
-            flagstring = 0;
+            flagString = 0;
         end
     end
 end
@@ -837,6 +891,30 @@ for i=1:size(icode,1)
     elseif i == size(icode,1) && icode(i,2) < length(code)
         splitc{end+1} = code(icode(i,2)+1:end);
     end
+end
+function str=existDict(var4existDict)
+% check what sort of thing is var4existDict
+existNum=exist(var4existDict); %#ok<EXIST>
+str='';
+switch existNum
+    case 0
+        str=''; %if NAME does not exist
+    case 1
+        str=''; % NAME is a variable in the workspace
+    case 2
+        str= [var4existDict,' is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt)'];
+    case 3
+        str= [var4existDict,' is a MEX-file on the MATLAB search path'];
+    case 4
+        str= [var4existDict,' is a Simulink model or library file on the MATLAB search path'];
+    case 5
+        str= [var4existDict,' is a built-in MATLAB function'];
+    case 6
+        str= [var4existDict,' is a P-code file on the MATLAB search path'];
+    case 7
+        str= ''; % a folder
+    case 8
+        str= [var4existDict,' is a class'];
 end
 ##### SOURCE END #####
 --></body></html>

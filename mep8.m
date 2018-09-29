@@ -20,9 +20,8 @@ function [txt1,issues] = mep8(fileName,overwrite)
 %% To Do
 %  - polish and test on more code
 %  - decide what to do with * / .^ etc
-%  - try avoiding extra spaces inside code lines
-%  - try add spaces after , ; and such in middle of line, but not before
-%  - check variable names - this is a hard one, make lower first letter etc
+%  - try avoiding extra spaces inside code lines (e.g. var1     =    15;)
+%  - try add spaces after , ; and such in middle of line
 %  - do something about line lengths
 
 %% Assign default values
