@@ -9,9 +9,9 @@ The code [mep8.m](https://github.com/yuval-harpaz/mep8/blob/master/mep8.m) shoul
 ```markdown
 [txt,issues]=mep8(fileName, overwrite);
 ```
-**fileName** is <path+> file name of the code you want to check / fix.\
-**overwrite** is true when you want to replace the original code with the fixed version (**txt** output). when overwrite is true, a backup file is created for the original code.\
-**txt** is a new version of the code after fixing indentation and padding "=" with spaces. Most issue types are NOT fixed, in order not to break the code (renaming variables, ending for loops etc).\
+**fileName** is <path+> file name of the code you want to check / fix.  
+**overwrite** is true when you want to replace the original code with the fixed version (**txt** output). when overwrite is true, a backup file is created for the original code.  
+**txt** is a new version of the code after fixing indentation and padding "=" with spaces. Most issue types are NOT fixed, in order not to break the code (renaming variables, ending for loops etc).  
 **issues** is a struct with fields describing the different issues diagnosed in different stages, such as missing ends to for loops, bad indentation, too short variable names (one letter) or variable names which are built-in matlab functions. issues are also printed at different stages of mep8 execution, so running mep8 with no output arguments will give you everything.
 
 
