@@ -1,4 +1,5 @@
-% function test1
+% this code is nonsensical, it does not run without errors. It has style
+% issues detectable by running mep8; or mep8('tests/test1.m).
 
 for ii=1:10;
   x=5;  
@@ -7,12 +8,6 @@ for ii=1:10;
       Xup=x+1/3;
     elseif ii~=3
     x=ii;   
-    elseif x >=1000
-        x=999;
-    elseif x<=0
-        x = 1;
-    elseif x >34
-        x=34;
     elseif x <=54
         disp('x is okay I guess')
      end
@@ -31,4 +26,5 @@ x = x+3+10000-...
     35; % comment here?
 finaltest = x+3+10000-...
     35; % comment there? with 'qoutes'?
+sphere = 2*pi;
 

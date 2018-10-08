@@ -7,7 +7,6 @@ function [txt1,issues] = mep8(fileName,overwrite)
 %  - txt1 is a string containing fixed code
 %  - issues contain fields describing the different issues encountered line
 % by line.
-
 %% features:
 %  - use checkcode.m to report code errors etc. chsckcode issues are reported
 % but not fixed.
@@ -16,13 +15,18 @@ function [txt1,issues] = mep8(fileName,overwrite)
 % strings and comments in the code, not to be touched when fixing (see
 % splitCode below).
 %  - pad "=" with spaces, or any char defined in spacePad variable
-
 %% To Do
 %  - polish and test on more code
 %  - decide what to do with * / .^ etc
-%  - try avoiding extra spaces inside code lines (e.g. var1     =    15;)
-%  - try add spaces after , ; and such in middle of line
+%  - treat function names, mainly bad style e.g Func_Name
 %  - do something about line lengths
+%  - check scope of short varNames
+%  - offer iStart for istart and starti
+%  - treat comments: capital 1st letter, function statment last comment,
+%  space after %, empty line after last informative comment
+%  - accept directory, perhaps also recursively
+%
+% [txt1,issues] = mep8(fileName,overwrite)
 
 %% Assign default values
 % when no fileName is given (no such var or empty) take default test file
@@ -128,6 +132,9 @@ for linei = 1:length(startLine0)
             lastNotSpace1 = find(~spaceIdx1,1,'last');
             if lastNotSpace1 < length(line1)
                 error('last fixed charecter should not be space')
+            end
+            if isempty(lastNotSpace0)
+                lastNotSpace0 = 0; % only spaces in a line
             end
             if lastNotSpace0 < length(line0)
                 msg = [msg,num2str(length(line0)-lastNotSpace0),...
@@ -235,8 +242,10 @@ else
     end
     if exist('words','var')
         for vari = 1:length(varNames)
-            if length(varNames{vari}) > 3
-                if ~ismember(lower(varNames{vari}),words)
+            if length(varNames{vari}) > 5 % dont try to combine two words if the name is short
+                if ~ismember(varNames{vari},words) ... % variable name is not a word
+                        && ~contains(varNames{vari},'_') ... % no underscore
+                        && isequal(varNames{vari},lower(varNames{vari})) % no upper-case letters
                     for cutPoint = 3:length(varNames{vari})-2
                         w1 = ismember(lower(varNames{vari}(1:cutPoint)),words);
                         w2 = ismember(lower(varNames{vari}(cutPoint+1:end)),words);
@@ -253,7 +262,10 @@ else
                 end
             end
         end
+    else
+        warning('unable to get a list of words to check variable names for wordness')
     end
+    % see that variable names do not shadow existing functions
     for vari = 1:length(varNames)
         otherUses = existDict(varNames{vari});
         if ~isempty(otherUses)
@@ -263,7 +275,7 @@ else
 end
 disp(issuesVarNames);
 issues.varNames = issuesVarNames;
-%% line length
+%% line length 80?
 
 
 %% overwrite if requested, save backup ('*bkp.m')

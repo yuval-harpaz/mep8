@@ -36,3 +36,9 @@ Equal signs are then **padded with spaces**, but not when in strings or comments
 **Variable names** are then treated in order to find bad style names: too sort (one letter), two words with no decent seperator (underscore or upperCase letter), and variables that are existing matlab functions. For this I used checkcode with some [undocumented mlint options](http://undocumentedmatlab.com/blog/parsing-mlint-code-analyzer-output), a list of english words as posted [here](https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt) and the function exist.
 A ToDo list, as well as code, input and output (result of publish('mep8.m','format','html')) is in [mep8.html](https://yuval-harpaz.github.io/mep8/html/mep8.html)
 
+## Style Guidelines
+[Richard Johnson](http://www.datatool.com/downloads/matlab_style_guidelines.pdf) suggested that:
+1. Variable names should be in mixed case starting with lower case (e.g. img, imageSize, imageEdgeColor)
+2. Function names should be lowercase (e.g. plot, findpeaks)
+Although many functions and variable names follow these guidelines, there are also many functions with uppercase letters  (e.g. plotCamera), and also some variable names and functions with underscore separating between words (e.g. make_gnu_tfl_table). 
+I tested Matlab toolbox to see to see how frequent it is to have underscores in function names, and other attributes of file names. see a brief report [here](html/statistics.html)
