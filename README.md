@@ -40,5 +40,5 @@ A ToDo list, as well as code, input and output (result of publish('mep8.m','form
 [Richard Johnson](http://www.datatool.com/downloads/matlab_style_guidelines.pdf) suggested that:
 1. Variable names should be in mixed case starting with lower case (e.g. img, imageSize, imageEdgeColor)
 2. Function names should be lowercase (e.g. plot, findpeaks)
-Although many functions and variable names follow these guidelines, there are also many functions with uppercase letters  (e.g. plotCamera), and also some variable names and functions with underscore separating between words (e.g. make_gnu_tfl_table). 
+Although many functions and variable names follow these guidelines, there are also many functions with uppercase letters  (e.g. plotCamera), and also some variable names and functions with underscore separating between words (e.g. make_gnu_tfl_table).  
 I tested Matlab toolbox to see to see how frequent it is to have underscores in function names, and other attributes of file names. see a brief report [here](html/statistics.html)
