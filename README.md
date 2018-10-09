@@ -37,18 +37,29 @@ Equal signs are then **padded with spaces**, but not when in strings or comments
 A ToDo list, as well as code, input and output (result of publish('mep8.m','format','html')) is in [mep8.html](https://yuval-harpaz.github.io/mep8/html/mep8.html)
 
 ## Style Guidelines
-### function and variable names
+### 1. function and variable names
 [Richard Johnson](http://www.datatool.com/downloads/matlab_style_guidelines.pdf) suggested that:
-1. Variable names should be in mixed case starting with lower case (e.g. img, imageSize, imageEdgeColor)
-2. Function names should be lowercase (e.g. plot, findpeaks)
-3. Variable names should reflect their scope, use short names (one letter) when the variable used in few adjacent lines, but longer informative names when the variable is used throughout the script.
-4. i and j are reserved Matlab names for imaginary numbers and should not be used as variable names. One can use ii and jj instead ([see also [here](https://stackoverflow.com/questions/14790740/using-i-and-j-as-variables-in-matlab))
-5. indices may be formatted with lowercase i and then a capitalized word (e.g. iSample).  
+* Variable names should be in mixed case starting with lower case (e.g. img, imageSize, imageEdgeColor)
+* Function names should be lowercase (e.g. plot, findpeaks)
+* Variable names should reflect their scope, use short names (one letter) when the variable used in few adjacent lines, but longer informative names when the variable is used throughout the script.
+* i and j are reserved Matlab names for imaginary numbers and should not be used as variable names. One can use ii and jj instead ([see also [here](https://stackoverflow.com/questions/14790740/using-i-and-j-as-variables-in-matlab))
+* indices may be formatted with lowercase i and then a capitalized word (e.g. iSample).  
 
-	I tested Matlab toolbox to see to see how frequent it is to have underscores in function names, and other attributes of file names. Although many functions and variable names follow the above guidelines, there are also many functions with uppercase letters  (e.g. plotCamera), and also some variable names and functions with underscore separating between words (e.g. make_gnu_tfl_table). The most common for loop variable is i and there are as many index variables with the format iName as all lowercase iname. see a brief report [here](html/statistics.html).  
-	We can put it to a vote but a stand should be taken. For pep8 to be style guideline we can't simply say that everything goes. It has to conform with Matlab built in function names and the way things are written, but while we can't choose some improbable format, inconsistency in Matlab code forces us to choose.  
-Since I am the only pep8 community now, my vote is that there should be a difference between function names and variable names, for names longer than onw word. Variable names comprised of two parts or more should have a capital letter separator. Function names with two words should be written in all lowercase format. When the two words are long [length(functionname) > 15], or when the name of the function consists of more than two words, name parts should be separated by underscore.  
-Although the use of i in for loops is very common, I prefer the [use of ii](https://stackoverflow.com/questions/14790740/using-i-and-j-as-variables-in-matlab). When testing whether variable names shadow existing functions a message will be printed that i shadows a buit-in function.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I tested Matlab toolbox to see to see how frequent it is to have underscores in function names, and other attributes of file names. Although many functions and variable names follow the above guidelines, there are also many functions with uppercase letters  (e.g. plotCamera), and also some variable names and functions with underscore separating between words (e.g. make_gnu_tfl_table). The most common for loop variable is i and there are as many index variables with the format iName as all lowercase iname. see a brief report [here](html/statistics.html).  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We can put it to a vote but a stand should be taken. For pep8 to be style guideline we can't simply say that everything goes. It has to conform with Matlab built in function names and the way things are written, but while we can't choose some improbable format, inconsistency in Matlab code forces us to choose.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Since I am the only pep8 community now, my vote is that there should be a difference between function names and variable names, for names longer than onw word.  
+**1.1 Variable names** comprised of two parts or more should have a capital letter separator (**variableName**).  
+**1.2 Function names** with two words should be written in all lowercase format (**functionname**). When the two words are long [length(functionname) > 15], or when the name of the function consists of more than two words, name parts should be separated by underscore (**long_function_name**).  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Although the use of i in for loops is very common, I prefer the [use of ii](https://stackoverflow.com/questions/14790740/using-i-and-j-as-variables-in-matlab). When testing whether variable names shadow existing functions a message will be printed that i shadows a buit-in function.  
+**1.3 Using i or j** as variable names should be avoided. Use **ii** and **jj** instead.  
+**1.4 variables with large scope** should have informative names (**informativeName**, not **~~inm~~**).  
+**1.5 Index of array** should start with an i followed by a capitalized word (**iArray**).
 
+### 2. Layout  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Here we should consider what to do with blank spaces. As a rule, Matlab Editor's Ctrl+i should fix most indentation issues, and deviation from Ctrl+ied text may be considered bad style. So:  
+**2.1 indentation** should be 4 spaces long.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spaces around operators and different characters are more difficult to deal with. There is concensus for adding spaces around the signs < = > & |, and combinations such as && and ~=. However, you sometimes see programmers writing a = b*c; and others a = b * c. For short expressions padding operators with spaces is tidy, but I find it hard to read longer spaced expressions such as a = b .^ c * d / (e + someFvariable .^2). My vote:  
+**2.2 arithmetic operators** ^/\*+- should not be padded with spaces (**a = b\*c/d;**). For one operation lines, this is not bad style to pad with spaces (**a = b * c;**). 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
