@@ -36,7 +36,7 @@ Equal signs are then **padded with spaces**, but not when in strings or comments
 **Variable names** are then treated in order to find bad style names: too sort (one letter), two words with no decent seperator (underscore or upperCase letter), and variables that are existing matlab functions. For this I used checkcode with some [undocumented mlint options](http://undocumentedmatlab.com/blog/parsing-mlint-code-analyzer-output), a list of english words as posted [here](https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt) and the function exist.
 A ToDo list, as well as code, input and output (result of publish('mep8.m','format','html')) is in [mep8.html](https://yuval-harpaz.github.io/mep8/html/mep8.html)  
   
-  For further discussion on Johnson's book I summarised his document [here](Johnson_style.md)
+  For further discussion on Johnson's book I summarised his document [here](https://github.com/yuval-harpaz/mep8/blob/master/Johnson_style.md)
 
 ## Style Guidelines
 ### 1. function and variable names
