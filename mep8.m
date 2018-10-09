@@ -95,10 +95,15 @@ for linei = 1:length(startLine0)
     spaceIdx0 = ismember(line0,' ');
     spaceIdx1 = ismember(line1,' ');
     % check length of indentation
-    indent0 = find(~spaceIdx0,1);
+    if isempty(line0)
+        indent0=0;
+    else
+        indent0 = find(~spaceIdx0,1);
+    end
     indent1 = find(~spaceIdx1,1);
     
-    if isempty(indent1) && any(spaceIdx1) % a line with nothing but spaces
+    if isempty(indent1) && any(spaceIdx1) % a txt1 line with nothing but spaces
+        indent1 = sum(spaceIdx1);
         content(startLine1(linei):startLine1(linei)+length(line1)-1) = 'i';
     elseif indent1 > 1 % a line with spaces and then something else
         content(startLine1(linei):startLine1(linei)+indent1-2) = 'i';
@@ -167,7 +172,6 @@ if ~isempty(logi)
         insertSpace(logi-1) = true;
     end
 end
-% FIXME - space before ~=  as in "y = x~= 5"
 insertSpace(ismember(txt1,' ')) = false; % dont insert space after space
 insertSpace(find(ismember(txt1,' '))-1) = false;  % dont insert space before space
 % avoid touching strings and comments
@@ -196,7 +200,7 @@ if sum(insertSpace) > 0
     end
     disp(issuesSpace)
 else
-    fprintf('\b no reason for padding \n\n')
+    fprintf('\b no padding needed\n\n')
 end
 issues.spacePad = issuesSpace;
 for inserti = sort(find(insertSpace),'descend')
@@ -212,7 +216,8 @@ else
     issuesVarNames = '';
     % get variable names from text
     spaceLims = find(diff(ismember(varLines{1},' ')) > 0,2)+1;
-    varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),' ',''),varLines, 'UniformOutput',false);
+    varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),' ',''),...
+        varLines, 'UniformOutput',false);
     varNames = unique(varNames);
     startWithUpper = cellfun(@(x) isequal(x(1),upper(x(1))),varNames);
     if any(startWithUpper)

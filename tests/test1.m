@@ -10,7 +10,10 @@ for ii=1:10;
     x=ii;   
     elseif x <=54
         disp('x is okay I guess')
-     end
+    elseif x~=15
+        [~,order] = sort(x);
+    end
+
 end
 str='I got  a =sign!';
 disp(str)
