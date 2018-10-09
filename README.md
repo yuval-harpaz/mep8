@@ -1,7 +1,7 @@
 ## Welcome to MEP 8 project, Style Guide for Matlab Code
 This tool (mep8.m) was created to help cleaning Matlab code, similarly tp Python Enhancement Proposal 8 (**PEP8**).
  The goal - make matlab code easy to read and standardized.  
-Matlab has no formal set of style rules, but there is Richard Johnson's [unofficial work](http://www.datatool.com/downloads/matlab_style_guidelines.pdf) which I find important (see some opinions [here](https://stackoverflow.com/questions/17453244/modern-matlab-codestyle-what-is-missing))  
+Matlab has no formal set of style rules, but there is Richard Johnson's [unofficial work](http://www.datatool.com/downloads/matlab_style_guidelines.pdf) which I find important (see some opinions [here](https://stackoverflow.com/questions/17453244/modern-matlab-codestyle-what-is-missing)), You can also get the follow-up [book](https://www.amazon.com/Elements-MATLAB-Style-Richard-Johnson/dp/0521732581)!  
 Please participate by testing it on your own code, send feedback and contribute to mep8.m
 
 ### Installation
@@ -34,7 +34,9 @@ The code runs **checkcode** and **indentcode** to use inherent matlab tools.
 It then uses **splitcode** (see a copy [here](https://github.com/pdollar/toolbox/blob/master/external/m2html/private/splitcode.m)) which is an [M2HTML](https://www.artefact.tk/software/matlab/m2html/) function. This helps us decide where comments and strings are in the text.  
 Equal signs are then **padded with spaces**, but not when in strings or comments. < > & and | are treated similarly.  
 **Variable names** are then treated in order to find bad style names: too sort (one letter), two words with no decent seperator (underscore or upperCase letter), and variables that are existing matlab functions. For this I used checkcode with some [undocumented mlint options](http://undocumentedmatlab.com/blog/parsing-mlint-code-analyzer-output), a list of english words as posted [here](https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt) and the function exist.
-A ToDo list, as well as code, input and output (result of publish('mep8.m','format','html')) is in [mep8.html](https://yuval-harpaz.github.io/mep8/html/mep8.html)
+A ToDo list, as well as code, input and output (result of publish('mep8.m','format','html')) is in [mep8.html](https://yuval-harpaz.github.io/mep8/html/mep8.html)  
+  
+  For further discussion on Johnson's book I summarised his document [here](Johnson_style.md)
 
 ## Style Guidelines
 ### 1. function and variable names
@@ -51,17 +53,6 @@ A ToDo list, as well as code, input and output (result of publish('mep8.m','form
 **1.1 Variable names** comprised of two parts or more should have a capital letter separator (**variableName**).  
 **1.2 Function names** with two words should be written in all lowercase format (**functionname**). When the two words are long [length(functionname) > 15], or when the name of the function consists of more than two words, name parts should be separated by underscore (**long_function_name**).  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Although the use of i in for loops is very common, I prefer the [use of ii](https://stackoverflow.com/questions/14790740/using-i-and-j-as-variables-in-matlab). When testing whether variable names shadow existing functions a message will be printed that i shadows a buit-in function.  
-**1.3 Using i or j** as variable names should be avoided. Use **ii** and **jj** instead.  
-**1.4 variables with large scope** should have informative names (**informativeName**, not **~~inm~~**).  
-**1.5 Index of array** should start with an i followed by a capitalized word (**iArray**).
 
-### 2. Layout  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Here we should consider what to do with blank spaces. As a rule, Matlab Editor's Ctrl+i should fix most indentation issues, and deviation from Ctrl+ied text may be considered bad style. So:  
-**2.1 Indentation** should be 4 spaces long.  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spaces around operators and different characters are more difficult to deal with. There is concensus for adding spaces around the signs < = > & |, and combinations such as || and ~=.  
-**2.2 Equals sign** = for assignments and **relational operators** [see here](https://www.mathworks.com/help/matlab/matlab_prog/array-comparison-with-relational-operators.html) should be padded with zeros (e.g **`a = 10;`**).  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;However, you sometimes see programmers writing a = b*c; and others a = b * c. For short expressions padding operators with spaces is tidy, but I find it hard to read longer spaced expressions such as a = b .^ c * d / (e + someFvariable .^2). My vote:  
-**2.3 Arithmetic operators** ^/\*+- should not be padded with spaces **`a = b*c/d;`**. For one operation lines, this is not bad style to pad with spaces **`a = b * c;`**. 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
