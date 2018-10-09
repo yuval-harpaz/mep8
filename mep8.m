@@ -1,7 +1,7 @@
 function [txt1,issues] = mep8(fileName,overwrite)
 % Checks style issues in matlab code, fixes and overwrites if requested.
 %% Input - output
-%  - fileName is *.m text file with code to check / fix
+%  - fileName is a *.m text file with code to check / fix
 %  - overwrite is true or false. when true, fileName is overwritten and a
 % backup file is created, ending in bkp.m
 %  - txt1 is a string containing fixed code
