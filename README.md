@@ -57,9 +57,11 @@ A ToDo list, as well as code, input and output (result of publish('mep8.m','form
 
 ### 2. Layout  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Here we should consider what to do with blank spaces. As a rule, Matlab Editor's Ctrl+i should fix most indentation issues, and deviation from Ctrl+ied text may be considered bad style. So:  
-**2.1 indentation** should be 4 spaces long.  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spaces around operators and different characters are more difficult to deal with. There is concensus for adding spaces around the signs < = > & |, and combinations such as && and ~=. However, you sometimes see programmers writing a = b*c; and others a = b * c. For short expressions padding operators with spaces is tidy, but I find it hard to read longer spaced expressions such as a = b .^ c * d / (e + someFvariable .^2). My vote:  
-**2.2 arithmetic operators** ^/\*+- should not be padded with spaces **`a = b*c/d;`**. For one operation lines, this is not bad style to pad with spaces **`a = b * c;`**. 
+**2.1 Indentation** should be 4 spaces long.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spaces around operators and different characters are more difficult to deal with. There is concensus for adding spaces around the signs < = > & |, and combinations such as || and ~=.  
+**2.2 Equals sign** = for assignments and **relational operators** [see here](https://www.mathworks.com/help/matlab/matlab_prog/array-comparison-with-relational-operators.html) should be padded with zeros (e.g **`a = 10;`**).  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;However, you sometimes see programmers writing a = b*c; and others a = b * c. For short expressions padding operators with spaces is tidy, but I find it hard to read longer spaced expressions such as a = b .^ c * d / (e + someFvariable .^2). My vote:  
+**2.3 Arithmetic operators** ^/\*+- should not be padded with spaces **`a = b*c/d;`**. For one operation lines, this is not bad style to pad with spaces **`a = b * c;`**. 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
