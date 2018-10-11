@@ -38,7 +38,7 @@ mep8('/path_to_file/mep8.m');
 cfg = [];
 cfg.factory = true;
 cfg.okayIssue = {'fileName';'might be unused'};
-[newCode, issues]=mep8('mep8',cfg,false);
+[newCode, issues] = mep8('mep8',cfg,false);
 ```
 ### Status
 The code runs **checkcode** and **indentcode** to use inherent matlab tools.  
