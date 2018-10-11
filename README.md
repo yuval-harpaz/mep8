@@ -1,5 +1,5 @@
 ## Welcome to MEP 8 project, Style Guide for Matlab Code
-This tool (mep8.m) was created to help cleaning Matlab code, similarly tp Python Enhancement Proposal 8 (**PEP8**).
+This tool (mep8.m) was created to help cleaning Matlab code, similarly to [Python Enhancement Proposal 8](https://www.python.org/dev/peps/pep-0008/) (**PEP8**).
  The goal - make matlab code easy to read and standardized.  
 Matlab has no formal set of style rules, but there is Richard Johnson's [unofficial work](http://www.datatool.com/downloads/matlab_style_guidelines.pdf) which I find important (see some opinions [here](https://stackoverflow.com/questions/17453244/modern-matlab-codestyle-what-is-missing)). Some features have been implemented, so now you can use mep8 to fix indentations, pad equals signs with zeros etc, and even overwrite the original code with the fixed version (a backup file is saved). In addition, a report of issues and potential issues is reported, such as shadowing existing functions with variable names. Many of these issues cannot be fixed automatically, so use the report to manually fix your code.   
 Please participate by testing it on your own code, send feedback and contribute to mep8.m code.
