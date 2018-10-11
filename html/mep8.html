@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>mep8</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-09-29"><meta name="DC.source" content="mep8.m"><style type="text/css">
+      --><title>mep8</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-10-11"><meta name="DC.source" content="mep8.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,12 +66,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Input - output</a></li><li><a href="#4">features:</a></li><li><a href="#5">To Do</a></li><li><a href="#6">Assign default values</a></li><li><a href="#7">check compatibility / code warnings</a></li><li><a href="#8">read text file</a></li><li><a href="#9">use matlab automatic indentation to add / remove spaces</a></li><li><a href="#10">look for '=' or other stuff to pad with spaces</a></li><li><a href="#11">variable names</a></li><li><a href="#12">line length</a></li><li><a href="#13">overwrite if requested, save backup ('*bkp.m')</a></li><li><a href="#14">Internal functions</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [txt1,issues] = mep8(fileName,overwrite)
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Input - output</a></li><li><a href="#4">features:</a></li><li><a href="#5">cfg options</a></li><li><a href="#6">To Do</a></li><li><a href="#7">website</a></li><li><a href="#8">Assign default values</a></li><li><a href="#9">check compatibility / code warnings</a></li><li><a href="#10">read text file</a></li><li><a href="#11">use matlab automatic indentation to add / remove spaces</a></li><li><a href="#12">look for '=' or other stuff to pad with spaces</a></li><li><a href="#13">variable names</a></li><li><a href="#14">line length 80?</a></li><li><a href="#15">overwrite if requested, save backup ('*bkp.m')</a></li><li><a href="#16">Internal functions</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> [codeFix,issues] = mep8(fileName,cfg,overwrite)
 </pre><pre class="codeinput"><span class="comment">% Checks style issues in matlab code, fixes and overwrites if requested.</span>
-</pre><h2 id="3">Input - output</h2><pre>- fileName is *.m text file with code to check / fix
-- overwrite is true or false. when true, fileName is overwritten and a
+</pre><h2 id="3">Input - output</h2><pre>- fileName is a *.m text file with code to check / fix
+- overwrite (optional) is true or false. when true, fileName is overwritten and a
 backup file is created, ending in bkp.m
-- txt1 is a string containing fixed code
+- cfg (optional) is a struct with configuration fields. see cfg options below
+- codeFix is a string containing fixed code
 - issues contain fields describing the different issues encountered line
 by line.</pre><h2 id="4">features:</h2><pre>- use checkcode.m to report code errors etc. chsckcode issues are reported
 but not fixed.
@@ -79,11 +80,21 @@ but not fixed.
 - use splitcode (adapted from m2html) to process the text. This labels
 strings and comments in the code, not to be touched when fixing (see
 splitCode below).
-- pad "=" with spaces, or any char defined in spacePad variable</pre><h2 id="5">To Do</h2><pre>- polish and test on more code
+- pad "=" with spaces, or any char defined in spacePad variable</pre><h2 id="5">cfg options</h2><pre>- cfg.factory = true (default) tells chekccode to ignore warning supression
+previously defined by the user (e.g. %#ok comments inline). If you set
+cfg.factory to false it may not be mep8 style anymore, but this is
+freedom for you.
+- cfg.okayIssue is an N by 1 cell array with strings indicating that some issues
+are to be ignored. The default is to ignore Matlab messages about
+variables changing size in a loop: cfg.okayIssue{1,1} = 'appears to change size';</pre><h2 id="6">To Do</h2><pre>- polish and test on more code
 - decide what to do with * / .^ etc
-- try avoiding extra spaces inside code lines (e.g. var1     =    15;)
-- try add spaces after , ; and such in middle of line
-- do something about line lengths</pre><h2 id="6">Assign default values</h2><p>when no fileName is given (no such var or empty) take default test file</p><pre class="codeinput">fileName = defaultVal(<span class="string">'fileName'</span>,[fileparts(which(<span class="string">'mep8.m'</span>)),<span class="string">'/tests/test1.m'</span>]);
+- treat function names, mainly bad style e.g Func_Name
+- do something about line lengths
+- check scope of short varNames
+- offer iStart for istart and starti
+- treat comments: capital 1st letter, function statment last comment,
+space after %, empty line after last informative comment
+- accept directory, perhaps also recursively</pre><h2 id="7">website</h2><p>See author, license and more stuff here https://yuval-harpaz.github.io/mep8/ (click view on github) [codeFix,issues] = mep8(fileName,cfg,overwrite)</p><h2 id="8">Assign default values</h2><p>when no fileName is given (no such var or empty) take default test file</p><pre class="codeinput">fileName = defaultVal(<span class="string">'fileName'</span>,[fileparts(which(<span class="string">'mep8.m'</span>)),<span class="string">'/tests/test1.m'</span>]);
 <span class="keyword">if</span> ~isequal(fileName(end-1:end),<span class="string">'.m'</span>)
     tmp = which(fileName);
     <span class="keyword">if</span> ~isempty(tmp)
@@ -96,35 +107,68 @@ splitCode below).
 overwrite = defaultVal(<span class="string">'overwrite'</span>,false); <span class="comment">% overwrite file and save backup?</span>
 spacePad = <span class="string">'&gt;&lt;=|&amp;'</span>; <span class="comment">% which stuff to pad with spaces</span>
 noSpaceNear = <span class="string">'~&gt;&lt;=|&amp;'</span>; <span class="comment">% between which chars not to isert space, e.g. ~=   &amp;&amp;</span>
-</pre><h2 id="7">check compatibility / code warnings</h2><pre class="codeinput">disp(<span class="string">'running checkcode: '</span>)
-issuesCodecheck = checkcode(fileName,<span class="string">'-string'</span>,<span class="string">'-config=factory'</span>);
+cfg = defaultVal(<span class="string">'cfg'</span>,struct);
+<span class="keyword">if</span> ~isfield(cfg,<span class="string">'okayIssue'</span>)
+    cfg.okayIssue{1,1} = <span class="string">'appears to change size'</span>; <span class="comment">% okay with mep8 to change size of a variable within a loop</span>
+<span class="keyword">end</span>
+<span class="keyword">if</span> ~isfield(cfg,<span class="string">'factory'</span>)
+    cfg.factory = true; <span class="comment">% okay with mep8 to change size of a variable within a loop</span>
+<span class="keyword">end</span>
+</pre><h2 id="9">check compatibility / code warnings</h2><pre class="codeinput">disp(<span class="string">'running checkcode: '</span>)
+<span class="keyword">if</span> cfg.factory
+    issuesCodecheck = checkcode(fileName,<span class="string">'-string'</span>,<span class="string">'-config=factory'</span>);
+<span class="keyword">else</span>
+    issuesCodecheck = checkcode(fileName,<span class="string">'-string'</span>);
+<span class="keyword">end</span>
+<span class="keyword">if</span> ~isempty(issuesCodecheck)
+    <span class="keyword">if</span> isfield(cfg,<span class="string">'okayIssue'</span>)
+        <span class="keyword">for</span> iOkay = 1:length(cfg.okayIssue)
+            deleteMessage = strfind(issuesCodecheck,cfg.okayIssue{iOkay});
+            <span class="keyword">if</span> ~isempty(deleteMessage)
+                rmLoc = false(1,length(issuesCodecheck));
+                <span class="keyword">for</span> iMsg = 1:length(deleteMessage)
+                    nlLoc = find(ismember(issuesCodecheck,newline));
+                    <span class="comment">% next newline</span>
+                    nl1 = nlLoc(find(nlLoc &gt; deleteMessage(iMsg),1));
+                    <span class="comment">% previous newline</span>
+                    nl0 = nlLoc(find(nlLoc &lt; deleteMessage(iMsg),1,<span class="string">'last'</span>));
+                    <span class="keyword">if</span> isempty(nl0)
+                        rmLoc(1:nl1) = true;
+                    <span class="keyword">else</span>
+                        rmLoc(nl0+1:nl1) = true;
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+                issuesCodecheck(rmLoc) = [];
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
 <span class="comment">% process code to find variable names etc</span>
 <span class="comment">% see http://undocumentedmatlab.com/blog/parsing-mlint-code-analyzer-output</span>
-ccEdit = checkcode(fileName,<span class="string">'-edit'</span>); <span class="comment">% -ty gives variable lines</span>
-ccEdit=ccEdit(1).message;
+
 <span class="keyword">if</span> isempty(issuesCodecheck)
-    fprintf(<span class="string">'\b done \n\n'</span>)
+    fprintf(<span class="string">'\b no issues\n\n'</span>)
 <span class="keyword">else</span>
     disp(issuesCodecheck);
 <span class="keyword">end</span>
-issues.codeCheck=issuesCodecheck;
+issues.codeCheck = issuesCodecheck;
 </pre><pre class="codeoutput">running checkcode: 
-L 3 (C 12): Extra semicolon is unnecessary in FOR statement before newline.
+L 4 (C 12): Extra semicolon is unnecessary in FOR statement before newline.
 
-</pre><h2 id="8">read text file</h2><pre class="codeinput">f = fopen(fileName);
-txt0 = native2unicode(fread(f,<span class="string">'uint8=&gt;uint8'</span>)');
-fclose(f);
+</pre><h2 id="10">read text file</h2><pre class="codeinput">fr = fopen(fileName);
+codeOrig = native2unicode(fread(fr,<span class="string">'uint8=&gt;uint8'</span>)');
+fclose(fr);
 <span class="comment">% replace return \r with newline \n</span>
-txt0 = regexprep(txt0, <span class="string">'\r\n?'</span>, <span class="string">'\n'</span>);
+codeOrig = regexprep(codeOrig, <span class="string">'\r\n?'</span>, <span class="string">'\n'</span>);
 <span class="comment">% make sure last character is newline</span>
-<span class="keyword">if</span> ~isequal(txt0(end),newline)
-    txt0(end+1) = newline;
+<span class="keyword">if</span> ~isequal(codeOrig(end),newline)
+    codeOrig(end+1) = newline;
 <span class="keyword">end</span>
-</pre><h2 id="9">use matlab automatic indentation to add / remove spaces</h2><pre class="codeinput">disp(<span class="string">'checking bad indentations :'</span>)
-txt1 = indentcode(txt0);
+</pre><h2 id="11">use matlab automatic indentation to add / remove spaces</h2><pre class="codeinput">disp(<span class="string">'checking bad indentation:'</span>)
+codeFix = indentcode(codeOrig);
 <span class="comment">% find newline location in orig (0) and new text (1)</span>
-newLines0 = regexp(txt0,<span class="string">'\n'</span>);
-newLines1 = regexp(txt1,<span class="string">'\n'</span>);
+newLines0 = regexp(codeOrig,<span class="string">'\n'</span>);
+newLines1 = regexp(codeFix,<span class="string">'\n'</span>);
 <span class="keyword">if</span> ~isequal(length(newLines0),length(newLines1))
     error(<span class="string">'indented code and orig have different numbers of lines'</span>);
 <span class="keyword">end</span>
@@ -132,214 +176,313 @@ newLines1 = regexp(txt1,<span class="string">'\n'</span>);
 startLine0 = [1,newLines0(1:end-1)+1];
 startLine1 = [1,newLines1(1:end-1)+1];
 <span class="comment">% go line by line and check differences in spaces location</span>
-<span class="comment">% along the way, process txt1 and label the contents</span>
+<span class="comment">% along the way, process codeFix and label the contents</span>
 <span class="comment">%</span>
-content=repmat(<span class="string">'c'</span>,1,length(txt1)); <span class="comment">% c  is for code (not cookey)</span>
-row=nan(size(txt1));
-content(strfind(txt1,newline))=<span class="string">'n'</span>;
+content = repmat(<span class="string">'c'</span>,1,length(codeFix)); <span class="comment">% c  is for code (not cookey)</span>
+codeFixRow = nan(size(codeFix));
+content(strfind(codeFix,newline)) = <span class="string">'n'</span>;
 issuesIndent = <span class="string">''</span>;
 <span class="keyword">for</span> linei = 1:length(startLine0)
-    line0 = txt0(startLine0(linei):newLines0(linei)-1);
-    line1 = txt1(startLine1(linei):newLines1(linei)-1);
-    msg = <span class="string">''</span>;
-    lin = num2str(linei);
+    line0 = codeOrig(startLine0(linei):newLines0(linei)-1);
+    line1 = codeFix(startLine1(linei):newLines1(linei)-1);
+    spaceMessage = <span class="string">''</span>;
+    linStr = num2str(linei);
     spaceIdx0 = ismember(line0,<span class="string">' '</span>);
     spaceIdx1 = ismember(line1,<span class="string">' '</span>);
     <span class="comment">% check length of indentation</span>
-    indent0 = find(~spaceIdx0,1);
+    <span class="keyword">if</span> isempty(line0)
+        indent0 = 0;
+    <span class="keyword">else</span>
+        indent0 = find(~spaceIdx0,1);
+    <span class="keyword">end</span>
     indent1 = find(~spaceIdx1,1);
 
-    <span class="keyword">if</span> isempty(indent1) &amp;&amp; any(spaceIdx1) <span class="comment">% a line with nothing but spaces</span>
-        content(startLine1(linei):startLine1(linei)+length(line1)-1)=<span class="string">'i'</span>;
-    <span class="keyword">elseif</span> indent1&gt;1 <span class="comment">% a line with spaces and then something else</span>
-        content(startLine1(linei):startLine1(linei)+indent1-2)=<span class="string">'i'</span>;
+    <span class="keyword">if</span> isempty(indent1) &amp;&amp; any(spaceIdx1) <span class="comment">% a codeFix line with nothing but spaces</span>
+        indent1 = sum(spaceIdx1);
+        content(startLine1(linei):startLine1(linei)+length(line1)-1) = <span class="string">'i'</span>;
+    <span class="keyword">elseif</span> indent1 &gt; 1 <span class="comment">% a line with spaces and then something else</span>
+        content(startLine1(linei):startLine1(linei)+indent1-2) = <span class="string">'i'</span>;
     <span class="keyword">end</span>
-    row(startLine1(linei):newLines1(linei))=linei;
+    codeFixRow(startLine1(linei):newLines1(linei)) = linei;
     <span class="comment">% split to look for strings and comments (from m2html)</span>
     splitc = splitCode(line1);
-    start=startLine1(linei); <span class="comment">% marks beginning of split strings</span>
-    <span class="keyword">for</span> spliti=1:length(splitc)
+    start = startLine1(linei); <span class="comment">% marks beginning of split strings</span>
+    <span class="keyword">for</span> spliti = 1:length(splitc)
         <span class="keyword">if</span> ~isempty(splitc{spliti})
             <span class="keyword">switch</span> splitc{spliti}(1)
                 <span class="keyword">case</span> <span class="string">'%'</span>
-                    content(start:start+length(splitc{spliti})-1)=<span class="string">'%'</span>;
+                    content(start:start+length(splitc{spliti})-1) = <span class="string">'%'</span>;
                 <span class="keyword">case</span> <span class="string">''''</span>
-                    content(start:start+length(splitc{spliti})-1)=<span class="string">''''</span>;
+                    content(start:start+length(splitc{spliti})-1) = <span class="string">''''</span>;
             <span class="keyword">end</span>
         <span class="keyword">end</span>
-        start=start+length(splitc{spliti}); <span class="comment">% location of next split</span>
+        start = start+length(splitc{spliti}); <span class="comment">% location of next split</span>
     <span class="keyword">end</span>
 
     <span class="keyword">if</span> ~strcmp(line0,line1)
-        <span class="keyword">if</span> indent1&gt;indent0
+        <span class="keyword">if</span> indent1 &gt; indent0
             num = num2str(indent1-indent0);
-            msg = [<span class="string">'add '</span>,num,<span class="string">' spaces. '</span>];
-        <span class="keyword">elseif</span> indent1&lt;indent0
+            spaceMessage = [<span class="string">'Add '</span>,num,<span class="string">' spaces. '</span>];
+        <span class="keyword">elseif</span> indent1 &lt; indent0
             num = num2str(indent0-indent1);
-            msg = [<span class="string">'remove '</span>,num,<span class="string">' spaces. '</span>];
+            spaceMessage = [<span class="string">'remove '</span>,num,<span class="string">' spaces. '</span>];
         <span class="keyword">end</span>
         <span class="keyword">if</span> sum(~spaceIdx0) == sum(~spaceIdx1)
             lastNotSpace0 = find(~spaceIdx0,1,<span class="string">'last'</span>);
             lastNotSpace1 = find(~spaceIdx1,1,<span class="string">'last'</span>);
-            <span class="keyword">if</span> lastNotSpace1&lt;length(line1)
+            <span class="keyword">if</span> lastNotSpace1 &lt; length(line1)
                 error(<span class="string">'last fixed charecter should not be space'</span>)
             <span class="keyword">end</span>
-            <span class="keyword">if</span> lastNotSpace0&lt;length(line0)
-                msg = [msg,num2str(length(line0)-lastNotSpace0),<span class="keyword">...</span>
+            <span class="keyword">if</span> isempty(lastNotSpace0)
+                lastNotSpace0 = 0; <span class="comment">% only spaces in a line</span>
+            <span class="keyword">end</span>
+            <span class="keyword">if</span> lastNotSpace0 &lt; length(line0)
+                spaceMessage = [spaceMessage,num2str(length(line0)-lastNotSpace0),<span class="keyword">...</span>
                     <span class="string">' extra spaces in end of line'</span>];
             <span class="keyword">end</span>
         <span class="keyword">end</span>
-        issuesIndent = [issuesIndent,<span class="string">'L '</span>,lin,<span class="string">': '</span>,msg,newline];
+        addMessage = true;
+        <span class="keyword">if</span> isfield(cfg,<span class="string">'okayIssue'</span>)
+            <span class="keyword">for</span> iOkay = 1:length(cfg.okayIssue)
+                okayInMsg = strfind(spaceMessage,cfg.okayIssue{iOkay});
+                <span class="keyword">if</span> ~isempty(okayInMsg)
+                    addMessage = false;
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">if</span> addMessage
+            issuesIndent = [issuesIndent,<span class="string">'L '</span>,linStr,<span class="string">': '</span>,spaceMessage,newline];
+        <span class="keyword">end</span>
     <span class="keyword">end</span>
 <span class="keyword">end</span>
 <span class="keyword">if</span> isempty(issuesIndent)
-    fprintf(<span class="string">'\b done \n\n'</span>)
+    fprintf(<span class="string">'\b no issues \n\n'</span>)
 <span class="keyword">else</span>
     disp(issuesIndent)
 <span class="keyword">end</span>
-issues.indent=issuesIndent;
-</pre><pre class="codeoutput">checking bad indentations :
-L 4: add 2 spaces. 2 extra spaces in end of line
-L 7: add 2 spaces. 
-L 9: add 4 spaces. 3 extra spaces in end of line
-L 18: remove 1 spaces. 
+issues.indent = issuesIndent;
+</pre><pre class="codeoutput">checking bad indentation:
+L 5: Add 2 spaces. 2 extra spaces in end of line
+L 8: Add 2 spaces. 
+L 10: Add 4 spaces. 3 extra spaces in end of line
+L 16: Add 4 spaces. 
 
-</pre><h2 id="10">look for '=' or other stuff to pad with spaces</h2><pre class="codeinput">disp([<span class="string">'padding '</span>,spacePad,<span class="string">' with spaces: '</span>])
-toPad = ismember(txt1,spacePad);
-insertSpace = toPad; <span class="comment">% make space after "="</span>
-insertSpace(find(toPad)-1) = true; <span class="comment">% make space before "="</span>
-<span class="comment">% find ~= &lt;= and &gt;=</span>
-logi = find(ismember(txt1,noSpaceNear));
-<span class="keyword">if</span> ~isempty(logi)
-    <span class="comment">%spacei = find(insertSpace);</span>
-    [~,ii] = ismember(logi,find(toPad)-1);
-    <span class="keyword">if</span> any(ii)
-        logi = logi(ii&gt;0);
-        insertSpace(logi) = false;
-        insertSpace(logi-1) = true;
-    <span class="keyword">end</span>
-<span class="keyword">end</span>
-<span class="comment">% FIXME - space before ~=  as in "y = x~= 5"</span>
-insertSpace(ismember(txt1,<span class="string">' '</span>)) = false; <span class="comment">% dont insert space after space</span>
-insertSpace(find(ismember(txt1,<span class="string">' '</span>))-1) = false;  <span class="comment">% dont insert space before space</span>
-<span class="comment">% avoid touching strings and comments</span>
-insertSpace(ismember(content,<span class="string">'%'</span>)) = false;
-insertSpace(ismember(content,<span class="string">''''</span>)) = false;
-tmp = [strrep(txt1,newline,<span class="string">'N'</span>);strrep(num2str(insertSpace),<span class="string">' '</span>,<span class="string">''</span>);content];
-disp(<span class="string">'location of "insert space after = "'</span>);
-disp(tmp);
-<span class="keyword">if</span> ~isempty(unique(content(insertSpace))) &amp;&amp; ~isequal(unique(content(insertSpace)),<span class="string">'c'</span>)
-    warning(<span class="string">'space insertion not in code "c"'</span>)
-<span class="keyword">end</span>
-spacedLines=unique(row(insertSpace));
-issuesSpace=<span class="string">''</span>;
-<span class="keyword">for</span> linei=1:length(spacedLines)
-    loc=find(insertSpace &amp; row == spacedLines(linei));
-    padded=spacePad(ismember(spacePad,txt1(loc(1)-1:loc(end))));
-    issuesSpace=[issuesSpace,<span class="string">'L '</span>,num2str(spacedLines(linei)),<span class="string">': '</span>,<span class="keyword">...</span>
-        padded,<span class="string">' padded with spaces.'</span>,newline];
-<span class="keyword">end</span>
-issues.spacePad=issuesSpace;
-<span class="keyword">for</span> inserti = sort(find(insertSpace),<span class="string">'descend'</span>)
-    txt1 = insertAfter(txt1,inserti,<span class="string">' '</span>);
-    content = insertAfter(content,inserti,<span class="string">'c'</span>);
-<span class="keyword">end</span>
-</pre><pre class="codeoutput">padding &gt;&lt;=|&amp; with spaces: 
-location of "insert space after = "
-% function test1NNfor ii=1:10;N    x=5;N    N    if ii==2N        Xup=x+1/3;N    elseif ii~=3N        x=ii;N    elseif x &gt;=1000N        x=999;N    elseif x&lt;=0N        x = 1;N    elseif x &gt;34N        x=34;N    elseif x &lt;=54N        disp('x is okay I guess')N    endNendNstr='I got  a =sign!';Ndisp(str)N% treat &lt;= respectfullyNdisp(x)Ntxt0 = native2unicode(fread(f,'uint8=&gt;uint8')');Ndisp(['here I test 3 dots + comment               XXXXXXXXXXXXX',... % here a comment laysN    ' more string here']);Ndisp('3 dots here ...  ') % more dots testsNm = 5+3+10000-...N    34;Nx = x+3+10000-...N    35; % comment here?Nfinaltest = x+3+10000-...N    35; % comment there? with 'qoutes'?NN
-00000000000000000000000110000000000110000000000000000101000000000000110000000000000000000101000000000011000000000000000000100000000000001100000000000000001010000000000000000000000000000001000000000001100000000000000000010000000000000000000000000000000000000000000000000001100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-%%%%%%%%%%%%%%%%nnccccccccccccniiiiccccniiiiniiiiccccccccniiiiiiiiccccccccccniiiiccccccccccccniiiiiiiicccccniiiicccccccccccccccniiiiiiiiccccccniiiicccccccccccniiiiiiiiccccccniiiiccccccccccccniiiiiiiicccccniiiicccccccccccccniiiiiiiiccccc'''''''''''''''''''cniiiicccncccncccc'''''''''''''''''cncccccccccn%%%%%%%%%%%%%%%%%%%%%%%ncccccccncccccccccccccccccccccccccccccc''''''''''''''ccccncccccc''''''''''''''''''''''''''''''''''''''''''''''''''''''''''ccccc%%%%%%%%%%%%%%%%%%%%%niiii'''''''''''''''''''cccnccccc'''''''''''''''''''cc%%%%%%%%%%%%%%%%%ncccccccccccccccccniiiicccncccccccccccccccccniiiicccc%%%%%%%%%%%%%%%ncccccccccccccccccccccccccniiiicccc%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%nn
-</pre><h2 id="11">variable names</h2><pre class="codeinput">varLines=regexp(ccEdit,newline,<span class="string">'split'</span>)';
-varLines=varLines(contains(varLines,<span class="string">' V '</span>));
-<span class="keyword">if</span> isempty(varLines)
-    warning(<span class="string">'no variables in code?'</span>)
-<span class="keyword">else</span>
-    issuesVarNames=<span class="string">''</span>;
-    <span class="comment">% get variable names from text</span>
-    spaceLims=find(diff(ismember(varLines{1},<span class="string">' '</span>))&gt;0,2)+1;
-    varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),<span class="string">' '</span>,<span class="string">''</span>),varLines, <span class="string">'UniformOutput'</span>,false);
-    startWithUpper = cellfun(@(x) isequal(x(1),upper(x(1))),varNames);
-    <span class="keyword">if</span> any(startWithUpper)
-        tmp=join(varNames(startWithUpper)');
-        issuesVarNames=[issuesVarNames,<span class="keyword">...</span>
-            <span class="string">'Variable names with upper-case first letter: '</span>,tmp{1},newline];
-    <span class="keyword">end</span>
-
-    varLength = cellfun(@(x) length(x),varNames);
-    <span class="keyword">if</span> any(varLength==1)
-        tmp=join(varNames(varLength==1)');
-        issuesVarNames=[issuesVarNames,<span class="string">'one letter variable names: '</span>,tmp{1},newline];
-    <span class="keyword">end</span>
-    <span class="comment">% look for two words such as finaltest</span>
-    <span class="keyword">if</span> exist(<span class="string">'words4mep8.mat'</span>,<span class="string">'file'</span>)
-        load <span class="string">words4mep8</span>
-    <span class="keyword">else</span>
-        <span class="keyword">try</span>
-            words=urlread(<span class="string">'https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt'</span>);
-            words=regexp(words,newline,<span class="string">'split'</span>)';
-            exclude=cellfun(@(x) length(x),words)&lt;2; <span class="comment">% single letters are not words</span>
-            exclude(123+find(cellfun(@(x) length(x),words(124:end))==2))=true; <span class="comment">% two letters (infrequent, below 130) are not words</span>
-            words(exclude)=[];
-        <span class="keyword">catch</span>
-            disp(<span class="string">'words list requires internet connections'</span>)
+</pre><h2 id="12">look for '=' or other stuff to pad with spaces</h2><pre class="codeinput">disp([<span class="string">'padding '</span>,spacePad,<span class="string">' with spaces: '</span>])
+issuesSpace = <span class="string">''</span>;
+doPadding = true;
+<span class="keyword">if</span> isfield(cfg,<span class="string">'okayIssue'</span>)
+    <span class="keyword">for</span> iOkay = 1:length(cfg.okayIssue)
+        okayInMsg = strfind(<span class="string">' padded with spaces.'</span>,cfg.okayIssue{iOkay});
+        <span class="keyword">if</span> ~isempty(okayInMsg)
+            doPadding = false;
+            fprintf(<span class="string">'\b skipping because of cfg.okayIssue \n\n'</span>)
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-    <span class="keyword">if</span> exist(<span class="string">'words'</span>,<span class="string">'var'</span>)
-        <span class="keyword">for</span> vari=1:length(varNames)
-            <span class="keyword">if</span> length(varNames{vari})&gt;3
-                <span class="keyword">if</span> ~ismember(lower(varNames{vari}),words)
-                    <span class="keyword">for</span> cutPoint=3:length(varNames{vari})-2
-                        w1=ismember(lower(varNames{vari}(1:cutPoint)),words);
-                        w2=ismember(lower(varNames{vari}(cutPoint+1:end)),words);
-                        <span class="keyword">if</span> w1 &amp;&amp; w2
-                            optionCap=[lower(varNames{vari}(1:cutPoint)),<span class="keyword">...</span>
-                                upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
-                            option_=[lower(varNames{vari}(1:cutPoint)),<span class="keyword">...</span>
-                                <span class="string">'_'</span>,lower(varNames{vari}(cutPoint+1:end))];
-                            <span class="keyword">if</span> ~isequal(varNames{vari},optionCap)
-                                issuesVarNames=[issuesVarNames,[<span class="string">'consider renaming '</span>,varNames{vari},<span class="string">' as '</span>,optionCap,<span class="string">' or '</span>,option_,newline]];
+<span class="keyword">end</span>
+<span class="keyword">if</span> doPadding
+
+    toPad = ismember(codeFix,spacePad);
+    insertSpace = toPad; <span class="comment">% make space after "="</span>
+    insertSpace(find(toPad)-1) = true; <span class="comment">% make space before "="</span>
+    <span class="comment">% find ~= &lt;= and &gt;=</span>
+    logi = find(ismember(codeFix,noSpaceNear));
+    <span class="keyword">if</span> ~isempty(logi)
+        <span class="comment">%spacei = find(insertSpace);</span>
+        [~,ii] = ismember(logi,find(toPad)-1);
+        <span class="keyword">if</span> any(ii)
+            logi = logi(ii &gt; 0);
+            insertSpace(logi) = false;
+            insertSpace(logi-1) = true;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    insertSpace(ismember(codeFix,<span class="string">' '</span>)) = false; <span class="comment">% dont insert space after space</span>
+    insertSpace(find(ismember(codeFix,<span class="string">' '</span>))-1) = false;  <span class="comment">% dont insert space before space</span>
+    <span class="comment">% avoid analyzing strings and comments</span>
+    insertSpace(ismember(content,<span class="string">'%'</span>)) = false;
+    insertSpace(ismember(content,<span class="string">''''</span>)) = false;
+    <span class="keyword">if</span> sum(insertSpace) &gt; 0
+        <span class="keyword">if</span> isfield(cfg,<span class="string">'dbg'</span>)
+            tmp1 = <span class="string">'code                                               '</span>;
+            tmp1(2,:) = <span class="string">'insert space after                                 '</span>;
+            tmp1(3,:) = [<span class="string">'c=code, %=comment, i=indent, '''</span>,<span class="string">'=string, n=newline   '</span>];
+            tmp2 = strrep(num2str(insertSpace),<span class="string">' '</span>,<span class="string">''</span>);
+            tmp2 = strrep(tmp2,<span class="string">'0'</span>,<span class="string">'_'</span>);
+            tmp2 = strrep(tmp2,<span class="string">'1'</span>,<span class="string">'^'</span>);
+            tmp3 = [strrep(codeFix,newline,<span class="string">'N'</span>);tmp2;content];
+            disp(<span class="string">'location of "insert space after"'</span>);
+            disp([tmp1,tmp3]);
+        <span class="keyword">end</span>
+        <span class="keyword">if</span> ~isempty(unique(content(insertSpace))) &amp;&amp; ~isequal(unique(content(insertSpace)),<span class="string">'c'</span>)
+            error(<span class="string">'space insertion not in code "c"'</span>)
+        <span class="keyword">end</span>
+        spacedLines = unique(codeFixRow(insertSpace));
+        <span class="keyword">for</span> linei = 1:length(spacedLines)
+            loc = find(insertSpace &amp; codeFixRow == spacedLines(linei));
+            padded = spacePad(ismember(spacePad,codeFix(loc(1)-1:loc(end))));
+            issuesSpace = [issuesSpace,<span class="string">'L '</span>,num2str(spacedLines(linei)),<span class="string">': '</span>,<span class="keyword">...</span>
+                padded,<span class="string">' padded with spaces.'</span>,newline];
+        <span class="keyword">end</span>
+        disp(issuesSpace)
+        <span class="comment">% Here we actually do the space padding</span>
+        <span class="keyword">for</span> inserti = sort(find(insertSpace),<span class="string">'descend'</span>)
+            codeFix = insertAfter(codeFix,inserti,<span class="string">' '</span>);
+            content = insertAfter(content,inserti,<span class="string">'c'</span>);
+        <span class="keyword">end</span>
+    <span class="keyword">else</span>
+        fprintf(<span class="string">'\b no issues\n\n'</span>)
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+issues.spacePad = issuesSpace;
+</pre><pre class="codeoutput">padding &gt;&lt;=|&amp; with spaces: 
+L 4: = padded with spaces.
+L 5: = padded with spaces.
+L 7: = padded with spaces.
+L 8: = padded with spaces.
+L 9: = padded with spaces.
+L 10: = padded with spaces.
+L 11: &lt;= padded with spaces.
+L 13: = padded with spaces.
+L 18: = padded with spaces.
+
+</pre><h2 id="13">variable names</h2><pre class="codeinput">disp(<span class="string">'checking variable names:'</span>)
+issuesVarNames = <span class="string">''</span>;
+cCodeEdit = checkcode(fileName,<span class="string">'-edit'</span>); <span class="comment">% -ty gives variable lines</span>
+<span class="keyword">if</span> isempty(cCodeEdit)
+    fprintf(<span class="string">'\b no variables found\n\n'</span>)
+<span class="keyword">else</span>
+    cCodeEdit = cCodeEdit(1).message;
+    varLines = regexp(cCodeEdit,newline,<span class="string">'split'</span>)';
+    varLines = varLines(contains(varLines,<span class="string">' V '</span>));
+    cCodeTY = checkcode(fileName,<span class="string">'-ty'</span>);
+    cCodeTY = cCodeTY(1).message;
+    <span class="keyword">if</span> isempty(varLines)
+        fprintf(<span class="string">'\b no variables found\n\n'</span>)
+    <span class="keyword">else</span>
+        <span class="comment">% get variable names from text</span>
+        spaceLims = find(diff(ismember(varLines{1},<span class="string">' '</span>)) &gt; 0,2)+1;
+        varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),<span class="string">' '</span>,<span class="string">''</span>),<span class="keyword">...</span>
+            varLines, <span class="string">'UniformOutput'</span>,false);
+        varNames = unique(varNames);
+        startWithUpper = cellfun(@(x) isequal(x(1),upper(x(1))),varNames);
+        <span class="keyword">if</span> any(startWithUpper)
+            <span class="keyword">for</span> iUpper1 = find(startWithUpper)'
+                <span class="comment">%tmp4 = join(varNames(startWithUpper)');</span>
+                issuesVarNames = [issuesVarNames,<span class="keyword">...</span>
+                    <span class="string">'L '</span>,varL(varNames{iUpper1},cCodeTY),<span class="string">': Variable '</span>,varNames{iUpper1},<span class="keyword">...</span>
+                    <span class="string">' starts with an uppercase letter'</span>,newline];
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="comment">% check scope of short name variables</span>
+        varLength = cellfun(@(x) length(x),varNames);
+        <span class="keyword">for</span> len = 1:4
+            varsToCheck = find(varLength == len);
+            <span class="keyword">if</span> ~isempty(varsToCheck)
+                <span class="keyword">for</span> iVar = 1:length(varsToCheck)
+                    [line1str,allLines] = varL(varNames(varsToCheck(iVar)),cCodeTY);
+                    scope = range(allLines)+1;
+                    <span class="comment">% here we allow scope to be 15 lines * name length</span>
+                    <span class="keyword">if</span> scope &gt; len*15
+                        issuesVarNames = [issuesVarNames,<span class="string">'L '</span>,line1str,<span class="keyword">...</span>
+                            <span class="string">': '</span>,varNames{varsToCheck(iVar)},<span class="string">' has a scope of '</span>,<span class="keyword">...</span>
+                            num2str(scope),<span class="string">' lines. Name length should be at least '</span>,<span class="keyword">...</span>
+                            num2str(min(ceil(scope/15),6)),<span class="string">' chars long'</span>,newline];
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="comment">% look for two words such as finaltest</span>
+        <span class="keyword">if</span> exist(<span class="string">'words4mep8.mat'</span>,<span class="string">'file'</span>)
+            load <span class="string">words4mep8</span> <span class="string">words</span>
+        <span class="keyword">else</span>
+            <span class="keyword">try</span>
+                words = urlread(<span class="string">'https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt'</span>);
+                words = regexp(words,newline,<span class="string">'split'</span>)';
+                exclude = cellfun(@(x) length(x),words) &lt; 2; <span class="comment">% single letters are not words</span>
+                exclude(123+find(cellfun(@(x) length(x),words(124:end)) == 2)) = true; <span class="comment">% two letters (infrequent, below 130) are not words</span>
+                words(exclude) = [];
+            <span class="keyword">catch</span>
+                disp(<span class="string">'words list requires internet connection'</span>)
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        <span class="keyword">if</span> exist(<span class="string">'words'</span>,<span class="string">'var'</span>)
+            <span class="keyword">for</span> vari = 1:length(varNames)
+                <span class="keyword">if</span> length(varNames{vari}) &gt; 5 <span class="comment">% dont try to combine two words if the name is short</span>
+                    <span class="keyword">if</span> ~ismember(varNames{vari},words) <span class="keyword">...</span><span class="comment"> % variable name is not a word</span>
+                            &amp;&amp; ~contains(varNames{vari},<span class="string">'_'</span>) <span class="keyword">...</span><span class="comment"> % no underscore</span>
+                            &amp;&amp; isequal(varNames{vari},lower(varNames{vari})) <span class="comment">% no upper-case letters</span>
+                        <span class="keyword">for</span> cutPoint = 3:length(varNames{vari})-2
+                            w1 = ismember(lower(varNames{vari}(1:cutPoint)),words);
+                            w2 = ismember(lower(varNames{vari}(cutPoint+1:end)),words);
+                            <span class="keyword">if</span> w1 &amp;&amp; w2
+                                optionCap = [lower(varNames{vari}(1:cutPoint)),<span class="keyword">...</span>
+                                    upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
+                                <span class="keyword">if</span> ~isequal(varNames{vari},optionCap)
+                                    var1stLine = varL(varNames{vari},cCodeTY);
+                                    issuesVarNames = [issuesVarNames,[<span class="string">'L '</span>,var1stLine,<span class="keyword">...</span>
+                                        <span class="string">': Consider renaming '</span>,varNames{vari},<span class="string">' as '</span>,optionCap,newline]];
+                                <span class="keyword">end</span>
                             <span class="keyword">end</span>
                         <span class="keyword">end</span>
                     <span class="keyword">end</span>
                 <span class="keyword">end</span>
             <span class="keyword">end</span>
+        <span class="keyword">else</span>
+            warning(<span class="string">'unable to get a list of words to check variable names for wordness'</span>)
+        <span class="keyword">end</span>
+        <span class="comment">% see that variable names do not shadow existing functions</span>
+        <span class="keyword">for</span> vari = 1:length(varNames)
+            otherUses = existDict(varNames{vari});
+            <span class="keyword">if</span> ~isempty(otherUses)
+                issuesVarNames = [issuesVarNames,<span class="string">'L '</span>,varL(varNames{vari},cCodeTY),<span class="string">': Variable '</span>,otherUses,newline];
+            <span class="keyword">end</span>
         <span class="keyword">end</span>
     <span class="keyword">end</span>
-    <span class="keyword">for</span> vari=1:length(varNames)
-        otherUses=existDict(varNames{vari});
-        <span class="keyword">if</span> ~isempty(otherUses)
-            issuesVarNames=[issuesVarNames,<span class="string">'Variable '</span>,otherUses,newline];
-        <span class="keyword">end</span>
+    <span class="comment">% sort the messages by line number</span>
+    <span class="keyword">if</span> isempty(issuesVarNames)
+        fprintf(<span class="string">'\b no issues\n\n'</span>)
+    <span class="keyword">else</span>
+        issuesVarNames = regexp(issuesVarNames(1:end-1),newline,<span class="string">'split'</span>);
+        lNum = cell2mat(cellfun(@(x) str2double(x(3:strfind(x,<span class="string">':'</span>)-1)),<span class="keyword">...</span>
+            issuesVarNames,<span class="string">'UniformOutput'</span>,false));
+        [~,order] = sort(lNum);
+        issuesVarNames = issuesVarNames(order);
+        issuesVarNames = join([issuesVarNames',repmat({newline},length(issuesVarNames),1)]);
+        issuesVarNames = join(issuesVarNames);
+        issuesVarNames = issuesVarNames{1};
+        issuesVarNames = strrep(issuesVarNames,[newline,<span class="string">' L'</span>],[newline,<span class="string">'L'</span>]);
+        disp(issuesVarNames);
     <span class="keyword">end</span>
 <span class="keyword">end</span>
-disp(issuesVarNames);
-issues.varNames=issuesVarNames;
-</pre><pre class="codeoutput">Variable names with upper-case first letter: Xup
-one letter variable names: x m
-consider renaming finaltest as finalTest or final_test
+issues.varNames = issuesVarNames;
+</pre><pre class="codeoutput">checking variable names:
+L 1: Variable CONST1 starts with an uppercase letter 
+L 8: Variable Xup starts with an uppercase letter 
+L 30: Consider renaming finaltest as finalTest 
+L 32: Variable sphere is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt) 
 
-</pre><h2 id="12">line length</h2><h2 id="13">overwrite if requested, save backup ('*bkp.m')</h2><pre class="codeinput"><span class="keyword">if</span> overwrite &amp;&amp; ~isequal(txt1,txt0)
+</pre><h2 id="14">line length 80?</h2><h2 id="15">overwrite if requested, save backup ('*bkp.m')</h2><pre class="codeinput"><span class="keyword">if</span> overwrite &amp;&amp; ~isequal(codeFix,codeOrig)
     [pat1,pat2,pat3] = fileparts(fileName);
     <span class="keyword">if</span> ~isempty(pat1)
         pat1 = [pat1,<span class="string">'/'</span>];
     <span class="keyword">end</span>
     bkpNew = false;
-    ii = 0;
+    jj = 0;
     <span class="keyword">while</span> bkpNew == false
-        ii = ii+1;
-        backup = [pat1,pat2,<span class="string">'_'</span>,num2str(ii),<span class="string">'bkp'</span>,pat3];
+        jj = jj+1;
+        backup = [pat1,pat2,<span class="string">'_'</span>,num2str(jj),<span class="string">'bkp'</span>,pat3];
         <span class="keyword">if</span> ~exist(backup,<span class="string">'file'</span>)
             bkpNew = true;
 
             fbkp = fopen(backup,<span class="string">'w'</span>);
-            fwrite(fbkp,txt1);
+            fwrite(fbkp,codeFix);
             fclose(fbkp);
             <span class="keyword">if</span> ~exist(backup,<span class="string">'file'</span>)
                 error(<span class="string">'backup file not created, not overwriting'</span>)
             <span class="keyword">end</span>
-            f = fopen(fileName,<span class="string">'w'</span>);
-            fwrite(f,txt1);
-            fclose(f);
+            fw = fopen(fileName,<span class="string">'w'</span>);
+            fwrite(fw,codeFix);
+            fclose(fw);
             disp([<span class="string">'overwrote, backup file: '</span>,backup])
         <span class="keyword">end</span>
     <span class="keyword">end</span>
@@ -347,24 +490,22 @@ consider renaming finaltest as finalTest or final_test
 </pre><pre class="codeoutput">
 ans =
 
-    '% function test1
-     
+    '% this code is nonsensical, it does not run without errors. It has style
+     % issues detectable by running mep8; or mep8('tests/test1.m).
+     CONST1 = 15;
      for ii = 1:10;
          x = 5;
          
          if ii == 2
-             Xup = x+1/3;
+             Xup = x+1/3*CONST1;
          elseif ii ~= 3
              x = ii;
-         elseif x &gt;= 1000
-             x = 999;
-         elseif x &lt;= 0
-             x = 1;
-         elseif x &gt; 34
-             x = 34;
          elseif x &lt;= 54
              disp('x is okay I guess')
+         elseif x ~= 15
+             [~,order] = sort(x);
          end
+         
      end
      str = 'I got  a =sign!';
      disp(str)
@@ -380,10 +521,11 @@ ans =
          35; % comment here?
      finaltest = x+3+10000-...
          35; % comment there? with 'qoutes'?
+     sphere = 2*pi;
      
      '
 
-</pre><h2 id="14">Internal functions</h2><pre class="codeinput"><span class="keyword">function</span> val = defaultVal(varName,defValue)
+</pre><h2 id="16">Internal functions</h2><pre class="codeinput"><span class="keyword">function</span> val = defaultVal(varName,defValue)
 <span class="comment">% assigns defValue to varName when varName does not exist or empty</span>
 <span class="keyword">if</span> evalin(<span class="string">'caller'</span>,[<span class="string">'exist('''</span>,varName,<span class="string">''','</span>,<span class="string">'''var'''</span>,<span class="string">');'</span>])
     val = evalin(<span class="string">'caller'</span>,varName);
@@ -394,7 +536,7 @@ ans =
     val = defValue;
 <span class="keyword">end</span>
 
-<span class="keyword">function</span> splitc = splitCode(code)
+<span class="keyword">function</span> splitc = splitCode(code2split)
 <span class="comment">% adapted from m2html</span>
 <span class="comment">% splits line of Matlab code CODE into a cell</span>
 <span class="comment">%  array SPLITC where each element is either a character array ('...'),</span>
@@ -407,7 +549,7 @@ ans =
 
 
 <span class="comment">%- Label quotes in {'transpose', 'beginstring', 'midstring', 'endstring'}</span>
-iquote = strfind(code,<span class="string">''''</span>);
+iquote = strfind(code2split,<span class="string">''''</span>);
 quotetransp = [double(<span class="string">'_''.)}]'</span>) <span class="keyword">...</span>
     double(<span class="string">'A'</span>):double(<span class="string">'Z'</span>) <span class="keyword">...</span>
     double(<span class="string">'0'</span>):double(<span class="string">'9'</span>) <span class="keyword">...</span>
@@ -415,51 +557,38 @@ quotetransp = [double(<span class="string">'_''.)}]'</span>) <span class="keywor
 flagString = 0;
 flagdoublequote = 0;
 jquote = [];
-<span class="keyword">for</span> i=1:length(iquote)
+<span class="keyword">for</span> iq = 1:length(iquote)
     <span class="keyword">if</span> ~flagString
-        <span class="keyword">if</span> iquote(i) &gt; 1 &amp;&amp; any(quotetransp == double(code(iquote(i)-1)))
+        <span class="keyword">if</span> iquote(iq) &gt; 1 &amp;&amp; any(quotetransp == double(code2split(iquote(iq)-1)))
             <span class="comment">% =&gt; 'transpose';</span>
         <span class="keyword">else</span>
             <span class="comment">% =&gt; 'beginstring';</span>
-            jquote(size(jquote,1)+1,:) = [iquote(i) length(code)];
+            jquote(size(jquote,1)+1,:) = [iquote(iq) length(code2split)];
             flagString = 1;
         <span class="keyword">end</span>
     <span class="keyword">else</span> <span class="comment">% if flagstring</span>
         <span class="keyword">if</span> flagdoublequote || <span class="keyword">...</span>
-                (iquote(i) &lt; length(code) &amp;&amp; strcmp(code(iquote(i)+1),<span class="string">''''</span>))
+                (iquote(iq) &lt; length(code2split) &amp;&amp; strcmp(code2split(iquote(iq)+1),<span class="string">''''</span>))
             <span class="comment">% =&gt; 'midstring';</span>
             flagdoublequote = ~flagdoublequote;
         <span class="keyword">else</span>
             <span class="comment">% =&gt; 'endstring';</span>
-            jquote(size(jquote,1),2) = iquote(i);
+            jquote(size(jquote,1),2) = iquote(iq);
             flagString = 0;
         <span class="keyword">end</span>
     <span class="keyword">end</span>
 <span class="keyword">end</span>
 
 <span class="comment">%- Find if a portion of code is a comment</span>
-ipercent = strfind(code,<span class="string">'%'</span>);
+ipercent = strfind(code2split,<span class="string">'%'</span>);
 jpercent = [];
-<span class="keyword">for</span> i=1:length(ipercent)
+<span class="keyword">for</span> ip = 1:length(ipercent)
     <span class="keyword">if</span> isempty(jquote) || <span class="keyword">...</span>
-            ~any((ipercent(i) &gt; jquote(:,1)) &amp; (ipercent(i) &lt; jquote(:,2)))
-        jpercent = [ipercent(i) length(code)];
+            ~any((ipercent(ip) &gt; jquote(:,1)) &amp; (ipercent(ip) &lt; jquote(:,2)))
+        jpercent = [ipercent(ip) length(code2split)];
         <span class="keyword">break</span>;
     <span class="keyword">end</span>
 <span class="keyword">end</span>
-
-<span class="comment">% YH: this segment misbehaves</span>
-<span class="comment">% %- Find continuation punctuation '...'</span>
-<span class="comment">% icont = strfind(code,'...');</span>
-<span class="comment">% for i=1:length(icont)</span>
-<span class="comment">%     if (isempty(jquote) || ...</span>
-<span class="comment">%             ~any((icont(i) &gt; jquote(:,1)) &amp;&amp; (icont(i) &lt; jquote(:,2)))) &amp;&amp; ...</span>
-<span class="comment">%             (isempty(jpercent) || ...</span>
-<span class="comment">%             icont(i) &lt; jpercent(1))</span>
-<span class="comment">%         jpercent = [icont(i) length(code)];</span>
-<span class="comment">%         break;</span>
-<span class="comment">%     end</span>
-<span class="comment">% end</span>
 
 <span class="comment">%- Remove strings inside comments</span>
 <span class="keyword">if</span> ~isempty(jpercent) &amp;&amp; ~isempty(jquote)
@@ -470,54 +599,93 @@ jpercent = [];
 icode = [jquote ; jpercent];
 splitc = {};
 <span class="keyword">if</span> isempty(icode)
-    splitc{1} = code;
+    splitc{1} = code2split;
 <span class="keyword">elseif</span> icode(1,1) &gt; 1
-    splitc{1} = code(1:icode(1,1)-1);
+    splitc{1} = code2split(1:icode(1,1)-1);
 <span class="keyword">end</span>
-<span class="keyword">for</span> i=1:size(icode,1)
-    splitc{end+1} = code(icode(i,1):icode(i,2));
-    <span class="keyword">if</span> i &lt; size(icode,1) &amp;&amp; icode(i+1,1) &gt; icode(i,2) + 1
-        splitc{end+1} = code((icode(i,2)+1):(icode(i+1,1)-1));
-    <span class="keyword">elseif</span> i == size(icode,1) &amp;&amp; icode(i,2) &lt; length(code)
-        splitc{end+1} = code(icode(i,2)+1:end);
+<span class="keyword">for</span> ic = 1:size(icode,1)
+    splitc{end+1} = code2split(icode(ic,1):icode(ic,2));
+    <span class="keyword">if</span> ic &lt; size(icode,1) &amp;&amp; icode(ic+1,1) &gt; icode(ic,2) + 1
+        splitc{end+1} = code2split((icode(ic,2)+1):(icode(ic+1,1)-1));
+    <span class="keyword">elseif</span> ic == size(icode,1) &amp;&amp; icode(ic,2) &lt; length(code2split)
+        splitc{end+1} = code2split(icode(ic,2)+1:end);
     <span class="keyword">end</span>
 <span class="keyword">end</span>
-<span class="keyword">function</span> str=existDict(var4existDict)
+<span class="keyword">function</span> str = existDict(var4existDict)
 <span class="comment">% check what sort of thing is var4existDict</span>
-existNum=exist(var4existDict); <span class="comment">%#ok&lt;EXIST&gt;</span>
-str=<span class="string">''</span>;
+existNum = exist(var4existDict); <span class="comment">%#ok&lt;EXIST&gt;</span>
+str = <span class="string">''</span>;
 <span class="keyword">switch</span> existNum
     <span class="keyword">case</span> 0
-        str=<span class="string">''</span>; <span class="comment">%if NAME does not exist</span>
+        str = <span class="string">''</span>; <span class="comment">%if NAME does not exist</span>
     <span class="keyword">case</span> 1
-        str=<span class="string">''</span>; <span class="comment">% NAME is a variable in the workspace</span>
+        str = <span class="string">''</span>; <span class="comment">% NAME is a variable in the workspace</span>
     <span class="keyword">case</span> 2
-        str= [var4existDict,<span class="string">' is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt)'</span>];
+        str = [var4existDict,<span class="string">' is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt)'</span>];
     <span class="keyword">case</span> 3
-        str= [var4existDict,<span class="string">' is a MEX-file on the MATLAB search path'</span>];
+        str = [var4existDict,<span class="string">' is a MEX-file on the MATLAB search path'</span>];
     <span class="keyword">case</span> 4
-        str= [var4existDict,<span class="string">' is a Simulink model or library file on the MATLAB search path'</span>];
+        str = [var4existDict,<span class="string">' is a Simulink model or library file on the MATLAB search path'</span>];
     <span class="keyword">case</span> 5
-        str= [var4existDict,<span class="string">' is a built-in MATLAB function'</span>];
+        str = [var4existDict,<span class="string">' is a built-in MATLAB function'</span>];
     <span class="keyword">case</span> 6
-        str= [var4existDict,<span class="string">' is a P-code file on the MATLAB search path'</span>];
+        str = [var4existDict,<span class="string">' is a P-code file on the MATLAB search path'</span>];
     <span class="keyword">case</span> 7
-        str= <span class="string">''</span>; <span class="comment">% a folder</span>
+        str = <span class="string">''</span>; <span class="comment">% a folder</span>
     <span class="keyword">case</span> 8
-        str= [var4existDict,<span class="string">' is a class'</span>];
+        str = [var4existDict,<span class="string">' is a class'</span>];
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> [line1str,allLines] = varL(vName,ccTYf)
+<span class="comment">% Returns the first appearance of a variable (line number) as a string</span>
+<span class="comment">% If requested, returns all appearances in the code.</span>
+<span class="keyword">if</span> nargout == 1 <span class="comment">% quickly check first instance of a variable</span>
+    varInTY = strfind(ccTYf,[newline,vName,<span class="string">':'</span>]);
+    varInTY = varInTY(1);
+    var1stLine = regexp(ccTYf(varInTY:end),<span class="string">'\d*'</span>,<span class="string">'match'</span>);
+    line1str = var1stLine{1};
+<span class="keyword">elseif</span> nargout == 2
+    ccTYlines = regexp(ccTYf,newline,<span class="string">'split'</span>);
+
+    <span class="keyword">if</span> isequal(ccTYlines{1}(1:10),<span class="string">'FUNCTIONS:'</span>) <span class="comment">% maybe always true</span>
+        ccTYlines(1) = [];
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> isempty(ccTYlines{end}) <span class="comment">% maybe always true</span>
+        ccTYlines(end) = [];
+    <span class="keyword">end</span>
+    iVarLinesTY = find(cellfun(@(x) ~isequal(x(1),<span class="string">' '</span>),ccTYlines));
+    varNamesTY = cellfun(@(x) x(1:strfind(x,<span class="string">':'</span>)-1),ccTYlines(iVarLinesTY),<span class="keyword">...</span>
+        <span class="string">'uniformoutput'</span>,false);
+    whichTYlines = find(ismember(varNamesTY,vName));
+    currVarLines = [];
+    <span class="keyword">for</span> iwtyl = 1:length(whichTYlines)
+        nextVar = iVarLinesTY(find(iVarLinesTY &gt; iVarLinesTY(whichTYlines(iwtyl)),1));
+        <span class="keyword">if</span> isempty(nextVar)
+            lastLineToCheck = length(ccTYlines);
+        <span class="keyword">else</span>
+            lastLineToCheck = nextVar-1;
+        <span class="keyword">end</span>
+        linesToCheck = ccTYlines(iVarLinesTY(whichTYlines(iwtyl))+1:lastLineToCheck);
+        linesToCheck = cellfun(@(x) x(strfind(x,<span class="string">':'</span>)+1:end),linesToCheck,<span class="keyword">...</span>
+            <span class="string">'uniformoutput'</span>,false);
+        lineStr = join(linesToCheck);
+        currVarLines = [currVarLines,unique(str2double(lineStr{1}))];
+    <span class="keyword">end</span>
+    allLines = unique(currVarLines);
+    line1str = num2str(allLines(1));
 <span class="keyword">end</span>
 </pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-function [txt1,issues] = mep8(fileName,overwrite)
+function [codeFix,issues] = mep8(fileName,cfg,overwrite)
 % Checks style issues in matlab code, fixes and overwrites if requested.
 %% Input - output
-%  - fileName is *.m text file with code to check / fix
-%  - overwrite is true or false. when true, fileName is overwritten and a
+%  - fileName is a *.m text file with code to check / fix
+%  - overwrite (optional) is true or false. when true, fileName is overwritten and a
 % backup file is created, ending in bkp.m
-%  - txt1 is a string containing fixed code
+%  - cfg (optional) is a struct with configuration fields. see cfg options below
+%  - codeFix is a string containing fixed code
 %  - issues contain fields describing the different issues encountered line
 % by line.
-
 %% features:
 %  - use checkcode.m to report code errors etc. chsckcode issues are reported
 % but not fixed.
@@ -526,13 +694,29 @@ function [txt1,issues] = mep8(fileName,overwrite)
 % strings and comments in the code, not to be touched when fixing (see
 % splitCode below).
 %  - pad "=" with spaces, or any char defined in spacePad variable
-
+%% cfg options
+%  - cfg.factory = true (default) tells chekccode to ignore warning supression
+% previously defined by the user (e.g. %#ok comments inline). If you set
+% cfg.factory to false it may not be mep8 style anymore, but this is
+% freedom for you.
+%  - cfg.okayIssue is an N by 1 cell array with strings indicating that some issues
+%  are to be ignored. The default is to ignore Matlab messages about
+%  variables changing size in a loop: cfg.okayIssue{1,1} = 'appears to change size';
 %% To Do
 %  - polish and test on more code
 %  - decide what to do with * / .^ etc
-%  - try avoiding extra spaces inside code lines (e.g. var1     =    15;)
-%  - try add spaces after , ; and such in middle of line
+%  - treat function names, mainly bad style e.g Func_Name
 %  - do something about line lengths
+%  - check scope of short varNames
+%  - offer iStart for istart and starti
+%  - treat comments: capital 1st letter, function statment last comment,
+%  space after %, empty line after last informative comment
+%  - accept directory, perhaps also recursively
+%% website
+% See author, license and more stuff here https://yuval-harpaz.github.io/mep8/
+% (click view on github)
+% [codeFix,issues] = mep8(fileName,cfg,overwrite)
+
 
 %% Assign default values
 % when no fileName is given (no such var or empty) take default test file
@@ -549,37 +733,69 @@ end
 overwrite = defaultVal('overwrite',false); % overwrite file and save backup?
 spacePad = '><=|&'; % which stuff to pad with spaces
 noSpaceNear = '~><=|&'; % between which chars not to isert space, e.g. ~=   &&
-
+cfg = defaultVal('cfg',struct);
+if ~isfield(cfg,'okayIssue')
+    cfg.okayIssue{1,1} = 'appears to change size'; % okay with mep8 to change size of a variable within a loop
+end
+if ~isfield(cfg,'factory')
+    cfg.factory = true; % okay with mep8 to change size of a variable within a loop
+end
 %% check compatibility / code warnings
 disp('running checkcode: ')
-issuesCodecheck = checkcode(fileName,'-string','-config=factory');
+if cfg.factory
+    issuesCodecheck = checkcode(fileName,'-string','-config=factory');
+else
+    issuesCodecheck = checkcode(fileName,'-string');
+end
+if ~isempty(issuesCodecheck)
+    if isfield(cfg,'okayIssue')
+        for iOkay = 1:length(cfg.okayIssue)
+            deleteMessage = strfind(issuesCodecheck,cfg.okayIssue{iOkay});
+            if ~isempty(deleteMessage)
+                rmLoc = false(1,length(issuesCodecheck));
+                for iMsg = 1:length(deleteMessage)
+                    nlLoc = find(ismember(issuesCodecheck,newline));
+                    % next newline
+                    nl1 = nlLoc(find(nlLoc > deleteMessage(iMsg),1));
+                    % previous newline
+                    nl0 = nlLoc(find(nlLoc < deleteMessage(iMsg),1,'last'));
+                    if isempty(nl0)
+                        rmLoc(1:nl1) = true;
+                    else
+                        rmLoc(nl0+1:nl1) = true;
+                    end
+                end
+                issuesCodecheck(rmLoc) = [];
+            end
+        end
+    end
+end
 % process code to find variable names etc
 % see http://undocumentedmatlab.com/blog/parsing-mlint-code-analyzer-output
-ccEdit = checkcode(fileName,'-edit'); % -ty gives variable lines
-ccEdit=ccEdit(1).message;
+
 if isempty(issuesCodecheck)
-    fprintf('\b done \n\n')
+    fprintf('\b no issues\n\n')
 else
     disp(issuesCodecheck);
 end
-issues.codeCheck=issuesCodecheck;
+issues.codeCheck = issuesCodecheck;
 %% read text file
-f = fopen(fileName);
-txt0 = native2unicode(fread(f,'uint8=>uint8')');
-fclose(f);
+fr = fopen(fileName);
+codeOrig = native2unicode(fread(fr,'uint8=>uint8')');
+fclose(fr);
 % replace return \r with newline \n
-txt0 = regexprep(txt0, '\r\n?', '\n');
+codeOrig = regexprep(codeOrig, '\r\n?', '\n');
 % make sure last character is newline
-if ~isequal(txt0(end),newline)
-    txt0(end+1) = newline;
+if ~isequal(codeOrig(end),newline)
+    codeOrig(end+1) = newline;
 end
 
 %% use matlab automatic indentation to add / remove spaces
-disp('checking bad indentations :')
-txt1 = indentcode(txt0);
+disp('checking bad indentation:')
+codeFix = indentcode(codeOrig);
 % find newline location in orig (0) and new text (1)
-newLines0 = regexp(txt0,'\n');
-newLines1 = regexp(txt1,'\n');
+newLines0 = regexp(codeOrig,'\n');
+newLines1 = regexp(codeFix,'\n');
 if ~isequal(length(newLines0),length(newLines1))
     error('indented code and orig have different numbers of lines');
 end
@@ -587,206 +803,298 @@ end
 startLine0 = [1,newLines0(1:end-1)+1];
 startLine1 = [1,newLines1(1:end-1)+1];
 % go line by line and check differences in spaces location
-% along the way, process txt1 and label the contents
+% along the way, process codeFix and label the contents
 %
-content=repmat('c',1,length(txt1)); % c  is for code (not cookey)
-row=nan(size(txt1));
-content(strfind(txt1,newline))='n';
+content = repmat('c',1,length(codeFix)); % c  is for code (not cookey)
+codeFixRow = nan(size(codeFix));
+content(strfind(codeFix,newline)) = 'n';
 issuesIndent = '';
 for linei = 1:length(startLine0)
-    line0 = txt0(startLine0(linei):newLines0(linei)-1);
-    line1 = txt1(startLine1(linei):newLines1(linei)-1);
-    msg = '';
-    lin = num2str(linei);
+    line0 = codeOrig(startLine0(linei):newLines0(linei)-1);
+    line1 = codeFix(startLine1(linei):newLines1(linei)-1);
+    spaceMessage = '';
+    linStr = num2str(linei);
     spaceIdx0 = ismember(line0,' ');
     spaceIdx1 = ismember(line1,' ');
     % check length of indentation
-    indent0 = find(~spaceIdx0,1);
+    if isempty(line0)
+        indent0 = 0;
+    else
+        indent0 = find(~spaceIdx0,1);
+    end
     indent1 = find(~spaceIdx1,1);
     
-    if isempty(indent1) && any(spaceIdx1) % a line with nothing but spaces
-        content(startLine1(linei):startLine1(linei)+length(line1)-1)='i';
-    elseif indent1>1 % a line with spaces and then something else
-        content(startLine1(linei):startLine1(linei)+indent1-2)='i';
+    if isempty(indent1) && any(spaceIdx1) % a codeFix line with nothing but spaces
+        indent1 = sum(spaceIdx1);
+        content(startLine1(linei):startLine1(linei)+length(line1)-1) = 'i';
+    elseif indent1 > 1 % a line with spaces and then something else
+        content(startLine1(linei):startLine1(linei)+indent1-2) = 'i';
     end
-    row(startLine1(linei):newLines1(linei))=linei;
+    codeFixRow(startLine1(linei):newLines1(linei)) = linei;
     % split to look for strings and comments (from m2html)
     splitc = splitCode(line1);
-    start=startLine1(linei); % marks beginning of split strings
-    for spliti=1:length(splitc)
+    start = startLine1(linei); % marks beginning of split strings
+    for spliti = 1:length(splitc)
         if ~isempty(splitc{spliti})
             switch splitc{spliti}(1)
                 case '%'
-                    content(start:start+length(splitc{spliti})-1)='%';
+                    content(start:start+length(splitc{spliti})-1) = '%';
                 case ''''
-                    content(start:start+length(splitc{spliti})-1)='''';
+                    content(start:start+length(splitc{spliti})-1) = '''';
             end
         end
-        start=start+length(splitc{spliti}); % location of next split
+        start = start+length(splitc{spliti}); % location of next split
     end
     
     if ~strcmp(line0,line1)
-        if indent1>indent0
+        if indent1 > indent0
             num = num2str(indent1-indent0);
-            msg = ['add ',num,' spaces. '];
-        elseif indent1<indent0
+            spaceMessage = ['Add ',num,' spaces. '];
+        elseif indent1 < indent0
             num = num2str(indent0-indent1);
-            msg = ['remove ',num,' spaces. '];
+            spaceMessage = ['remove ',num,' spaces. '];
         end
         if sum(~spaceIdx0) == sum(~spaceIdx1)
             lastNotSpace0 = find(~spaceIdx0,1,'last');
             lastNotSpace1 = find(~spaceIdx1,1,'last');
-            if lastNotSpace1<length(line1)
+            if lastNotSpace1 < length(line1)
                 error('last fixed charecter should not be space')
             end
-            if lastNotSpace0<length(line0)
-                msg = [msg,num2str(length(line0)-lastNotSpace0),...
+            if isempty(lastNotSpace0)
+                lastNotSpace0 = 0; % only spaces in a line
+            end
+            if lastNotSpace0 < length(line0)
+                spaceMessage = [spaceMessage,num2str(length(line0)-lastNotSpace0),...
                     ' extra spaces in end of line'];
             end
         end
-        issuesIndent = [issuesIndent,'L ',lin,': ',msg,newline];
+        addMessage = true;
+        if isfield(cfg,'okayIssue')
+            for iOkay = 1:length(cfg.okayIssue)
+                okayInMsg = strfind(spaceMessage,cfg.okayIssue{iOkay});
+                if ~isempty(okayInMsg)
+                    addMessage = false;
+                end
+            end
+        end
+        if addMessage
+            issuesIndent = [issuesIndent,'L ',linStr,': ',spaceMessage,newline];
+        end
     end
 end
 if isempty(issuesIndent)
-    fprintf('\b done \n\n')
+    fprintf('\b no issues \n\n')
 else
     disp(issuesIndent)
 end
-issues.indent=issuesIndent;
+issues.indent = issuesIndent;
 
 %% look for '=' or other stuff to pad with spaces
 disp(['padding ',spacePad,' with spaces: '])
-toPad = ismember(txt1,spacePad);
-insertSpace = toPad; % make space after "="
-insertSpace(find(toPad)-1) = true; % make space before "="
-% find ~= <= and >=
-logi = find(ismember(txt1,noSpaceNear));
-if ~isempty(logi)
-    %spacei = find(insertSpace);
-    [~,ii] = ismember(logi,find(toPad)-1);
-    if any(ii)
-        logi = logi(ii>0);
-        insertSpace(logi) = false;
-        insertSpace(logi-1) = true;
-    end
-end
-% FIXME - space before ~=  as in "y = x~= 5"
-insertSpace(ismember(txt1,' ')) = false; % dont insert space after space
-insertSpace(find(ismember(txt1,' '))-1) = false;  % dont insert space before space
-% avoid touching strings and comments
-insertSpace(ismember(content,'%')) = false;
-insertSpace(ismember(content,'''')) = false;
-tmp = [strrep(txt1,newline,'N');strrep(num2str(insertSpace),' ','');content];
-disp('location of "insert space after = "');
-disp(tmp);
-if ~isempty(unique(content(insertSpace))) && ~isequal(unique(content(insertSpace)),'c')
-    warning('space insertion not in code "c"')
-end
-spacedLines=unique(row(insertSpace));
-issuesSpace='';
-for linei=1:length(spacedLines)
-    loc=find(insertSpace & row == spacedLines(linei));
-    padded=spacePad(ismember(spacePad,txt1(loc(1)-1:loc(end))));
-    issuesSpace=[issuesSpace,'L ',num2str(spacedLines(linei)),': ',...
-        padded,' padded with spaces.',newline];
-end
-issues.spacePad=issuesSpace;
-for inserti = sort(find(insertSpace),'descend')
-    txt1 = insertAfter(txt1,inserti,' ');
-    content = insertAfter(content,inserti,'c');
-end
-%% variable names
-varLines=regexp(ccEdit,newline,'split')';
-varLines=varLines(contains(varLines,' V '));
-if isempty(varLines)
-    warning('no variables in code?')
-else
-    issuesVarNames='';
-    % get variable names from text
-    spaceLims=find(diff(ismember(varLines{1},' '))>0,2)+1;
-    varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),' ',''),varLines, 'UniformOutput',false);
-    startWithUpper = cellfun(@(x) isequal(x(1),upper(x(1))),varNames);
-    if any(startWithUpper)
-        tmp=join(varNames(startWithUpper)');
-        issuesVarNames=[issuesVarNames,...
-            'Variable names with upper-case first letter: ',tmp{1},newline];
-    end
-    
-    varLength = cellfun(@(x) length(x),varNames);
-    if any(varLength==1)
-        tmp=join(varNames(varLength==1)');
-        issuesVarNames=[issuesVarNames,'one letter variable names: ',tmp{1},newline];
-    end
-    % look for two words such as finaltest
-    if exist('words4mep8.mat','file')
-        load words4mep8
-    else
-        try
-            words=urlread('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt');
-            words=regexp(words,newline,'split')';
-            exclude=cellfun(@(x) length(x),words)<2; % single letters are not words
-            exclude(123+find(cellfun(@(x) length(x),words(124:end))==2))=true; % two letters (infrequent, below 130) are not words
-            words(exclude)=[];
-        catch
-            disp('words list requires internet connections')
+issuesSpace = '';
+doPadding = true;
+if isfield(cfg,'okayIssue')
+    for iOkay = 1:length(cfg.okayIssue)
+        okayInMsg = strfind(' padded with spaces.',cfg.okayIssue{iOkay});
+        if ~isempty(okayInMsg)
+            doPadding = false;
+            fprintf('\b skipping because of cfg.okayIssue \n\n')
         end
     end
-    if exist('words','var')
-        for vari=1:length(varNames)
-            if length(varNames{vari})>3
-                if ~ismember(lower(varNames{vari}),words)
-                    for cutPoint=3:length(varNames{vari})-2
-                        w1=ismember(lower(varNames{vari}(1:cutPoint)),words);
-                        w2=ismember(lower(varNames{vari}(cutPoint+1:end)),words);
-                        if w1 && w2
-                            optionCap=[lower(varNames{vari}(1:cutPoint)),...
-                                upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
-                            option_=[lower(varNames{vari}(1:cutPoint)),...
-                                '_',lower(varNames{vari}(cutPoint+1:end))];
-                            if ~isequal(varNames{vari},optionCap)
-                                issuesVarNames=[issuesVarNames,['consider renaming ',varNames{vari},' as ',optionCap,' or ',option_,newline]];
+end
+if doPadding
+    
+    toPad = ismember(codeFix,spacePad);
+    insertSpace = toPad; % make space after "="
+    insertSpace(find(toPad)-1) = true; % make space before "="
+    % find ~= <= and >=
+    logi = find(ismember(codeFix,noSpaceNear));
+    if ~isempty(logi)
+        %spacei = find(insertSpace);
+        [~,ii] = ismember(logi,find(toPad)-1);
+        if any(ii)
+            logi = logi(ii > 0);
+            insertSpace(logi) = false;
+            insertSpace(logi-1) = true;
+        end
+    end
+    insertSpace(ismember(codeFix,' ')) = false; % dont insert space after space
+    insertSpace(find(ismember(codeFix,' '))-1) = false;  % dont insert space before space
+    % avoid analyzing strings and comments
+    insertSpace(ismember(content,'%')) = false;
+    insertSpace(ismember(content,'''')) = false;
+    if sum(insertSpace) > 0
+        if isfield(cfg,'dbg')
+            tmp1 = 'code                                               ';
+            tmp1(2,:) = 'insert space after                                 ';
+            tmp1(3,:) = ['c=code, %=comment, i=indent, ''','=string, n=newline   '];
+            tmp2 = strrep(num2str(insertSpace),' ','');
+            tmp2 = strrep(tmp2,'0','_');
+            tmp2 = strrep(tmp2,'1','^');
+            tmp3 = [strrep(codeFix,newline,'N');tmp2;content];
+            disp('location of "insert space after"');
+            disp([tmp1,tmp3]);
+        end
+        if ~isempty(unique(content(insertSpace))) && ~isequal(unique(content(insertSpace)),'c')
+            error('space insertion not in code "c"')
+        end
+        spacedLines = unique(codeFixRow(insertSpace));
+        for linei = 1:length(spacedLines)
+            loc = find(insertSpace & codeFixRow == spacedLines(linei));
+            padded = spacePad(ismember(spacePad,codeFix(loc(1)-1:loc(end))));
+            issuesSpace = [issuesSpace,'L ',num2str(spacedLines(linei)),': ',...
+                padded,' padded with spaces.',newline];
+        end
+        disp(issuesSpace)
+        % Here we actually do the space padding
+        for inserti = sort(find(insertSpace),'descend')
+            codeFix = insertAfter(codeFix,inserti,' ');
+            content = insertAfter(content,inserti,'c');
+        end
+    else
+        fprintf('\b no issues\n\n')
+    end
+end
+issues.spacePad = issuesSpace;
+
+%% variable names
+disp('checking variable names:')
+issuesVarNames = '';
+cCodeEdit = checkcode(fileName,'-edit'); % -ty gives variable lines
+if isempty(cCodeEdit)
+    fprintf('\b no variables found\n\n')
+else
+    cCodeEdit = cCodeEdit(1).message;
+    varLines = regexp(cCodeEdit,newline,'split')';
+    varLines = varLines(contains(varLines,' V '));
+    cCodeTY = checkcode(fileName,'-ty');
+    cCodeTY = cCodeTY(1).message;
+    if isempty(varLines)
+        fprintf('\b no variables found\n\n')
+    else
+        % get variable names from text
+        spaceLims = find(diff(ismember(varLines{1},' ')) > 0,2)+1;
+        varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),' ',''),...
+            varLines, 'UniformOutput',false);
+        varNames = unique(varNames);
+        startWithUpper = cellfun(@(x) isequal(x(1),upper(x(1))),varNames);
+        if any(startWithUpper)
+            for iUpper1 = find(startWithUpper)'
+                %tmp4 = join(varNames(startWithUpper)');
+                issuesVarNames = [issuesVarNames,...
+                    'L ',varL(varNames{iUpper1},cCodeTY),': Variable ',varNames{iUpper1},...
+                    ' starts with an uppercase letter',newline];
+            end
+        end
+        % check scope of short name variables
+        varLength = cellfun(@(x) length(x),varNames);
+        for len = 1:4
+            varsToCheck = find(varLength == len);
+            if ~isempty(varsToCheck)
+                for iVar = 1:length(varsToCheck)
+                    [line1str,allLines] = varL(varNames(varsToCheck(iVar)),cCodeTY);
+                    scope = range(allLines)+1;
+                    % here we allow scope to be 15 lines * name length
+                    if scope > len*15
+                        issuesVarNames = [issuesVarNames,'L ',line1str,...
+                            ': ',varNames{varsToCheck(iVar)},' has a scope of ',...
+                            num2str(scope),' lines. Name length should be at least ',...
+                            num2str(min(ceil(scope/15),6)),' chars long',newline];
+                    end
+                end
+                
+            end
+        end
+        % look for two words such as finaltest
+        if exist('words4mep8.mat','file')
+            load words4mep8 words
+        else
+            try
+                words = urlread('https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt');
+                words = regexp(words,newline,'split')';
+                exclude = cellfun(@(x) length(x),words) < 2; % single letters are not words
+                exclude(123+find(cellfun(@(x) length(x),words(124:end)) == 2)) = true; % two letters (infrequent, below 130) are not words
+                words(exclude) = [];
+            catch
+                disp('words list requires internet connection')
+            end
+        end
+        if exist('words','var')
+            for vari = 1:length(varNames)
+                if length(varNames{vari}) > 5 % dont try to combine two words if the name is short
+                    if ~ismember(varNames{vari},words) ... % variable name is not a word
+                            && ~contains(varNames{vari},'_') ... % no underscore
+                            && isequal(varNames{vari},lower(varNames{vari})) % no upper-case letters
+                        for cutPoint = 3:length(varNames{vari})-2
+                            w1 = ismember(lower(varNames{vari}(1:cutPoint)),words);
+                            w2 = ismember(lower(varNames{vari}(cutPoint+1:end)),words);
+                            if w1 && w2
+                                optionCap = [lower(varNames{vari}(1:cutPoint)),...
+                                    upper(varNames{vari}(cutPoint+1)),lower(varNames{vari}(cutPoint+2:end))];
+                                if ~isequal(varNames{vari},optionCap)
+                                    var1stLine = varL(varNames{vari},cCodeTY);
+                                    issuesVarNames = [issuesVarNames,['L ',var1stLine,...
+                                        ': Consider renaming ',varNames{vari},' as ',optionCap,newline]];
+                                end
                             end
                         end
                     end
                 end
             end
+        else
+            warning('unable to get a list of words to check variable names for wordness')
+        end
+        % see that variable names do not shadow existing functions
+        for vari = 1:length(varNames)
+            otherUses = existDict(varNames{vari});
+            if ~isempty(otherUses)
+                issuesVarNames = [issuesVarNames,'L ',varL(varNames{vari},cCodeTY),': Variable ',otherUses,newline];
+            end
         end
     end
-    for vari=1:length(varNames)
-        otherUses=existDict(varNames{vari});
-        if ~isempty(otherUses)
-            issuesVarNames=[issuesVarNames,'Variable ',otherUses,newline];
-        end
+    % sort the messages by line number
+    if isempty(issuesVarNames)
+        fprintf('\b no issues\n\n')
+    else
+        issuesVarNames = regexp(issuesVarNames(1:end-1),newline,'split');
+        lNum = cell2mat(cellfun(@(x) str2double(x(3:strfind(x,':')-1)),...
+            issuesVarNames,'UniformOutput',false));
+        [~,order] = sort(lNum);
+        issuesVarNames = issuesVarNames(order);
+        issuesVarNames = join([issuesVarNames',repmat({newline},length(issuesVarNames),1)]);
+        issuesVarNames = join(issuesVarNames);
+        issuesVarNames = issuesVarNames{1};
+        issuesVarNames = strrep(issuesVarNames,[newline,' L'],[newline,'L']);
+        disp(issuesVarNames);
     end
 end
-disp(issuesVarNames);
-issues.varNames=issuesVarNames;
-%% line length
+issues.varNames = issuesVarNames;
+%% line length 80?
 
 
 %% overwrite if requested, save backup ('*bkp.m')
-if overwrite && ~isequal(txt1,txt0)
+if overwrite && ~isequal(codeFix,codeOrig)
     [pat1,pat2,pat3] = fileparts(fileName);
     if ~isempty(pat1)
         pat1 = [pat1,'/'];
     end
     bkpNew = false;
-    ii = 0;
+    jj = 0;
     while bkpNew == false
-        ii = ii+1;
-        backup = [pat1,pat2,'_',num2str(ii),'bkp',pat3];
+        jj = jj+1;
+        backup = [pat1,pat2,'_',num2str(jj),'bkp',pat3];
         if ~exist(backup,'file')
             bkpNew = true;
             
             fbkp = fopen(backup,'w');
-            fwrite(fbkp,txt1);
+            fwrite(fbkp,codeFix);
             fclose(fbkp);
             if ~exist(backup,'file')
                 error('backup file not created, not overwriting')
             end
-            f = fopen(fileName,'w');
-            fwrite(f,txt1);
-            fclose(f);
+            fw = fopen(fileName,'w');
+            fwrite(fw,codeFix);
+            fclose(fw);
             disp(['overwrote, backup file: ',backup])
         end
     end
@@ -804,7 +1112,7 @@ if isempty(val)
     val = defValue;
 end
 
-function splitc = splitCode(code)
+function splitc = splitCode(code2split)
 % adapted from m2html
 % splits line of Matlab code CODE into a cell
 %  array SPLITC where each element is either a character array ('...'),
@@ -817,7 +1125,7 @@ function splitc = splitCode(code)
 %  $Revision: 1.0 $Date: 2003/29/04 17:33:43 $
 
 %- Label quotes in {'transpose', 'beginstring', 'midstring', 'endstring'}
-iquote = strfind(code,'''');
+iquote = strfind(code2split,'''');
 quotetransp = [double('_''.)}]') ...
     double('A'):double('Z') ...
     double('0'):double('9') ...
@@ -825,51 +1133,38 @@ quotetransp = [double('_''.)}]') ...
 flagString = 0;
 flagdoublequote = 0;
 jquote = [];
-for i=1:length(iquote)
+for iq = 1:length(iquote)
     if ~flagString
-        if iquote(i) > 1 && any(quotetransp == double(code(iquote(i)-1)))
+        if iquote(iq) > 1 && any(quotetransp == double(code2split(iquote(iq)-1)))
             % => 'transpose';
         else
             % => 'beginstring';
-            jquote(size(jquote,1)+1,:) = [iquote(i) length(code)];
+            jquote(size(jquote,1)+1,:) = [iquote(iq) length(code2split)];
             flagString = 1;
         end
     else % if flagstring
         if flagdoublequote || ...
-                (iquote(i) < length(code) && strcmp(code(iquote(i)+1),''''))
+                (iquote(iq) < length(code2split) && strcmp(code2split(iquote(iq)+1),''''))
             % => 'midstring';
             flagdoublequote = ~flagdoublequote;
         else
             % => 'endstring';
-            jquote(size(jquote,1),2) = iquote(i);
+            jquote(size(jquote,1),2) = iquote(iq);
             flagString = 0;
         end
     end
 end
 
 %- Find if a portion of code is a comment
-ipercent = strfind(code,'%');
+ipercent = strfind(code2split,'%');
 jpercent = [];
-for i=1:length(ipercent)
+for ip = 1:length(ipercent)
     if isempty(jquote) || ...
-            ~any((ipercent(i) > jquote(:,1)) & (ipercent(i) < jquote(:,2)))
-        jpercent = [ipercent(i) length(code)];
+            ~any((ipercent(ip) > jquote(:,1)) & (ipercent(ip) < jquote(:,2)))
+        jpercent = [ipercent(ip) length(code2split)];
         break;
     end
 end
-
-% YH: this segment misbehaves
-% %- Find continuation punctuation '...'
-% icont = strfind(code,'...');
-% for i=1:length(icont)
-%     if (isempty(jquote) || ...
-%             ~any((icont(i) > jquote(:,1)) && (icont(i) < jquote(:,2)))) && ...
-%             (isempty(jpercent) || ...
-%             icont(i) < jpercent(1))
-%         jpercent = [icont(i) length(code)];
-%         break;
-%     end
-% end
 
 %- Remove strings inside comments
 if ~isempty(jpercent) && ~isempty(jquote)
@@ -880,41 +1175,81 @@ end
 icode = [jquote ; jpercent];
 splitc = {};
 if isempty(icode)
-    splitc{1} = code;
+    splitc{1} = code2split;
 elseif icode(1,1) > 1
-    splitc{1} = code(1:icode(1,1)-1);
+    splitc{1} = code2split(1:icode(1,1)-1);
 end
-for i=1:size(icode,1)
-    splitc{end+1} = code(icode(i,1):icode(i,2));
-    if i < size(icode,1) && icode(i+1,1) > icode(i,2) + 1
-        splitc{end+1} = code((icode(i,2)+1):(icode(i+1,1)-1));
-    elseif i == size(icode,1) && icode(i,2) < length(code)
-        splitc{end+1} = code(icode(i,2)+1:end);
+for ic = 1:size(icode,1)
+    splitc{end+1} = code2split(icode(ic,1):icode(ic,2));
+    if ic < size(icode,1) && icode(ic+1,1) > icode(ic,2) + 1
+        splitc{end+1} = code2split((icode(ic,2)+1):(icode(ic+1,1)-1));
+    elseif ic == size(icode,1) && icode(ic,2) < length(code2split)
+        splitc{end+1} = code2split(icode(ic,2)+1:end);
     end
 end
-function str=existDict(var4existDict)
+function str = existDict(var4existDict)
 % check what sort of thing is var4existDict
-existNum=exist(var4existDict); %#ok<EXIST>
-str='';
+existNum = exist(var4existDict); %#ok<EXIST>
+str = '';
 switch existNum
     case 0
-        str=''; %if NAME does not exist
+        str = ''; %if NAME does not exist
     case 1
-        str=''; % NAME is a variable in the workspace
+        str = ''; % NAME is a variable in the workspace
     case 2
-        str= [var4existDict,' is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt)'];
+        str = [var4existDict,' is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt)'];
     case 3
-        str= [var4existDict,' is a MEX-file on the MATLAB search path'];
+        str = [var4existDict,' is a MEX-file on the MATLAB search path'];
     case 4
-        str= [var4existDict,' is a Simulink model or library file on the MATLAB search path'];
+        str = [var4existDict,' is a Simulink model or library file on the MATLAB search path'];
     case 5
-        str= [var4existDict,' is a built-in MATLAB function'];
+        str = [var4existDict,' is a built-in MATLAB function'];
     case 6
-        str= [var4existDict,' is a P-code file on the MATLAB search path'];
+        str = [var4existDict,' is a P-code file on the MATLAB search path'];
     case 7
-        str= ''; % a folder
+        str = ''; % a folder
     case 8
-        str= [var4existDict,' is a class'];
+        str = [var4existDict,' is a class'];
 end
+
+function [line1str,allLines] = varL(vName,ccTYf)
+% Returns the first appearance of a variable (line number) as a string
+% If requested, returns all appearances in the code.
+if nargout == 1 % quickly check first instance of a variable
+    varInTY = strfind(ccTYf,[newline,vName,':']);
+    varInTY = varInTY(1);
+    var1stLine = regexp(ccTYf(varInTY:end),'\d*','match');
+    line1str = var1stLine{1};
+elseif nargout == 2
+    ccTYlines = regexp(ccTYf,newline,'split');
+    
+    if isequal(ccTYlines{1}(1:10),'FUNCTIONS:') % maybe always true
+        ccTYlines(1) = [];
+    end
+    if isempty(ccTYlines{end}) % maybe always true
+        ccTYlines(end) = [];
+    end
+    iVarLinesTY = find(cellfun(@(x) ~isequal(x(1),' '),ccTYlines));
+    varNamesTY = cellfun(@(x) x(1:strfind(x,':')-1),ccTYlines(iVarLinesTY),...
+        'uniformoutput',false);
+    whichTYlines = find(ismember(varNamesTY,vName));
+    currVarLines = [];
+    for iwtyl = 1:length(whichTYlines)
+        nextVar = iVarLinesTY(find(iVarLinesTY > iVarLinesTY(whichTYlines(iwtyl)),1));
+        if isempty(nextVar)
+            lastLineToCheck = length(ccTYlines);
+        else
+            lastLineToCheck = nextVar-1;
+        end
+        linesToCheck = ccTYlines(iVarLinesTY(whichTYlines(iwtyl))+1:lastLineToCheck);
+        linesToCheck = cellfun(@(x) x(strfind(x,':')+1:end),linesToCheck,...
+            'uniformoutput',false);
+        lineStr = join(linesToCheck);
+        currVarLines = [currVarLines,unique(str2double(lineStr{1}))];
+    end
+    allLines = unique(currVarLines);
+    line1str = num2str(allLines(1));
+end
+
 ##### SOURCE END #####
 --></body></html>

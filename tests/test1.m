@@ -1,11 +1,11 @@
 % this code is nonsensical, it does not run without errors. It has style
 % issues detectable by running mep8; or mep8('tests/test1.m).
-
+CONST1 = 15;
 for ii=1:10;
   x=5;  
     
     if ii==2
-      Xup=x+1/3;
+      Xup=x+1/3*CONST1;
     elseif ii~=3
     x=ii;   
     elseif x <=54
