@@ -62,6 +62,9 @@ end
 if ~isfield(cfg,'factory')
     cfg.factory = true; % okay with mep8 to change size of a variable within a loop
 end
+if ~isfield(cfg,'scopePerLetter')
+    cfg.scopePerLetter = 30;
+end
 %% check compatibility / code warnings
 disp('running checkcode: ')
 if cfg.factory
@@ -295,9 +298,11 @@ else
         fprintf('\b no variables found\n\n')
     else
         % get variable names from text
-        spaceLims = find(diff(ismember(varLines{1},' ')) > 0,2)+1;
-        varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),' ',''),...
-            varLines, 'UniformOutput',false);
+%         spaceLims = find(diff(ismember(varLines{1},' ')) > 0,2)+1;
+%         varNames = cellfun(@(x) strrep(x(spaceLims(1):spaceLims(2)),' ',''),...
+%             varLines, 'UniformOutput',false);
+        spaceLims = cellfun(@(x) find(diff(ismember(x,' ')) > 0,2)+1,varLines,'UniformOutput',false);
+        varNames = cellfun(@(x,y) strrep(x(y(1):y(2)),' ',''),varLines,spaceLims,'UniformOutput',false);
         varNames = unique(varNames);
         startWithUpper = cellfun(@(x) isequal(x(1),upper(x(1))),varNames);
         if any(startWithUpper)
@@ -314,14 +319,15 @@ else
             varsToCheck = find(varLength == len);
             if ~isempty(varsToCheck)
                 for iVar = 1:length(varsToCheck)
-                    [line1str,allLines] = varL(varNames(varsToCheck(iVar)),cCodeTY);
+                    %error('FIXME - check varL when mep8("IEfixJump")')
+                    [line1str,allLines] = varL(varNames{varsToCheck(iVar)},cCodeTY);
                     scope = range(allLines)+1;
-                    % here we allow scope to be 15 lines * name length
-                    if scope > len*15
+                    % here we allow scope to be cfg.scopePerLetter lines * name length
+                    if scope > len*cfg.scopePerLetter
                         issuesVarNames = [issuesVarNames,'L ',line1str,...
                             ': ',varNames{varsToCheck(iVar)},' has a scope of ',...
                             num2str(scope),' lines. Name length should be at least ',...
-                            num2str(min(ceil(scope/15),6)),' chars long',newline];
+                            num2str(min(ceil(scope/cfg.scopePerLetter),6)),' chars long',newline];
                     end
                 end
                 
@@ -360,6 +366,22 @@ else
                                 end
                             end
                         end
+                    elseif ~isempty(strfind(varNames{vari},'_'))
+                        underscoreLoc = strfind(varNames{vari},'_');
+                        underscoreLoc = underscoreLoc(underscoreLoc > 1. &...
+                            underscoreLoc < length(varNames{vari}));
+                        if ~isempty(underscoreLoc)
+                            if isequal(varNames{vari}(underscoreLoc-1),...
+                                    lower(varNames{vari}(underscoreLoc-1)))
+                                optionCap = varNames{vari};
+                                optionCap(underscoreLoc+1) = upper(optionCap(underscoreLoc+1));
+                                optionCap(underscoreLoc) = [];
+                                var1stLine = varL(varNames{vari},cCodeTY);
+                                issuesVarNames = [issuesVarNames,['L ',var1stLine,...
+                                    ': Consider renaming ',varNames{vari},' as ',optionCap,newline]];
+                                disp(['VAR ',varNames{vari},' PASSED'])
+                            end
+                        end
                     end
                 end
             end
@@ -395,29 +417,33 @@ issues.varNames = issuesVarNames;
 
 
 %% overwrite if requested, save backup ('*bkp.m')
-if overwrite && ~isequal(codeFix,codeOrig)
-    [pat1,pat2,pat3] = fileparts(fileName);
-    if ~isempty(pat1)
-        pat1 = [pat1,'/'];
-    end
-    bkpNew = false;
-    jj = 0;
-    while bkpNew == false
-        jj = jj+1;
-        backup = [pat1,pat2,'_',num2str(jj),'bkp',pat3];
-        if ~exist(backup,'file')
-            bkpNew = true;
-            
-            fbkp = fopen(backup,'w');
-            fwrite(fbkp,codeFix);
-            fclose(fbkp);
+if overwrite
+    if isequal(codeFix,codeOrig)
+        disp(['no changes to save for ',fileName])
+    else
+        [pat1,pat2,pat3] = fileparts(which(fileName));
+        if ~isempty(pat1)
+            pat1 = [pat1,'/'];
+        end
+        bkpNew = false;
+        jj = 0;
+        while bkpNew == false
+            jj = jj+1;
+            backup = [pat1,pat2,'_',num2str(jj),'bkp',pat3];
             if ~exist(backup,'file')
-                error('backup file not created, not overwriting')
+                bkpNew = true;
+                
+                fbkp = fopen(backup,'w');
+                fwrite(fbkp,codeFix);
+                fclose(fbkp);
+                if ~exist(backup,'file')
+                    error('backup file not created, not overwriting')
+                end
+                fw = fopen(which(fileName),'w');
+                fwrite(fw,codeFix);
+                fclose(fw);
+                disp(['overwrote, backup file: ',backup])
             end
-            fw = fopen(fileName,'w');
-            fwrite(fw,codeFix);
-            fclose(fw);
-            disp(['overwrote, backup file: ',backup])
         end
     end
 end
@@ -511,27 +537,39 @@ for ic = 1:size(icode,1)
 end
 function str = existDict(var4existDict)
 % check what sort of thing is var4existDict
-existNum = exist(var4existDict); %#ok<EXIST>
-str = '';
-switch existNum
-    case 0
-        str = ''; %if NAME does not exist
-    case 1
-        str = ''; % NAME is a variable in the workspace
-    case 2
-        str = [var4existDict,' is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt)'];
-    case 3
-        str = [var4existDict,' is a MEX-file on the MATLAB search path'];
-    case 4
-        str = [var4existDict,' is a Simulink model or library file on the MATLAB search path'];
-    case 5
-        str = [var4existDict,' is a built-in MATLAB function'];
-    case 6
-        str = [var4existDict,' is a P-code file on the MATLAB search path'];
-    case 7
-        str = ''; % a folder
-    case 8
-        str = [var4existDict,' is a class'];
+whichMsg = which(var4existDict);
+if isempty(whichMsg)
+    str = '';
+else
+    [~, whichName, ~] = fileparts(strrep(whichMsg,')',''));
+    if isequal(whichName,var4existDict) % maybe ~equal when case is different
+        existNum = exist(var4existDict); %#ok<EXIST>
+        
+        str = '';
+        switch existNum
+            case 0
+                str = ''; %if NAME does not exist
+                % error('how come whichMsg is ~empty?')
+            case 1
+                str = ''; % NAME is a variable in the workspace
+            case 2
+                str = [var4existDict,' is a file with extension .m, .mlx, or .mlapp, .mat, .fig, or .txt)'];
+            case 3
+                str = [var4existDict,' is a MEX-file on the MATLAB search path'];
+            case 4
+                str = [var4existDict,' is a Simulink model or library file on the MATLAB search path'];
+            case 5
+                str = [var4existDict,' is a built-in MATLAB function'];
+            case 6
+                str = [var4existDict,' is a P-code file on the MATLAB search path'];
+            case 7
+                str = ''; % a folder
+            case 8
+                str = [var4existDict,' is a class'];
+        end
+    else
+        str = '';
+    end
 end
 
 function [line1str,allLines] = varL(vName,ccTYf)
@@ -567,7 +605,7 @@ elseif nargout == 2
         linesToCheck = cellfun(@(x) x(strfind(x,':')+1:end),linesToCheck,...
             'uniformoutput',false);
         lineStr = join(linesToCheck);
-        currVarLines = [currVarLines,unique(str2double(lineStr{1}))];
+        currVarLines = [currVarLines,unique(str2num(lineStr{1}))];
     end
     allLines = unique(currVarLines);
     line1str = num2str(allLines(1));
